@@ -1,7 +1,6 @@
 // Contoh penggunaan di main.dart
 import 'package:flutter/material.dart';
 import 'model/coin.dart';
-
 import 'pages/LoginPage.dart';
 import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
