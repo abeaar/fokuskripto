@@ -12,13 +12,24 @@ class ConverterTab extends StatelessWidget {
   }
 }
 
+class WalletTabe extends StatelessWidget {
+  // Biarkan ini atau buat file terpisah nanti
+  const WalletTabe({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Ini adalah Tab wallet', style: TextStyle(fontSize: 20)),
+    );
+  }
+}
+
 class ProfileTab extends StatelessWidget {
   // Biarkan ini atau buat file terpisah nanti
   const ProfileTab({super.key});
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('Ini adalah Tab Profil', style: TextStyle(fontSize: 20)),
+      child: Text('Ini adalah Tab profile', style: TextStyle(fontSize: 20)),
     );
   }
 }
@@ -38,13 +49,31 @@ class _HomePageState extends State<HomePage> {
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardTab(), // <- GUNAKAN DashboardTab YANG BARU
     ConverterTab(),
-    ProfileTab(),
+    WalletTabe(),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _navigateToProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => Scaffold(
+              // Halaman profil akan memiliki Scaffold sendiri
+              appBar: AppBar(
+                title: const Text('Profil Saya'),
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              ),
+              body:
+                  const ProfileTab(), // Menggunakan konten profil yang sudah didefinisikan
+            ),
+      ),
+    );
   }
 
   @override
@@ -56,14 +85,23 @@ class _HomePageState extends State<HomePage> {
     } else if (_selectedIndex == 1) {
       title = 'Konverter';
     } else if (_selectedIndex == 2) {
-      title = 'Profil';
+      title = 'Wallet';
     }
 
     return Scaffold(
       appBar: AppBar(
-        // AppBar ditambahkan di sini
         title: Text(title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: <Widget>[
+          // Menambahkan actions untuk ikon di kanan AppBar
+          IconButton(
+            icon: const Icon(Icons.person_outline), // Ikon profil
+            tooltip: 'Profil Pengguna',
+            onPressed: () {
+              _navigateToProfile(context); // Panggil fungsi navigasi
+            },
+          ),
+        ],
       ),
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
@@ -71,10 +109,7 @@ class _HomePageState extends State<HomePage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.swap_horiz), label: 'Trade'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.wallet), label: 'Wallet'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
