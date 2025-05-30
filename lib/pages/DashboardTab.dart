@@ -118,7 +118,7 @@ class _DashboardTabState extends State<DashboardTab> {
             return Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
               child: Text(
-                "Semua Koin",
+                "Trending",
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),

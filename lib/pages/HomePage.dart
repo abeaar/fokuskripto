@@ -70,13 +70,10 @@ class _HomePageState extends State<HomePage> {
         // ... (sisa kode BottomNavigationBar tetap sama)
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.swap_horiz),
-            label: 'Konverter',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.swap_horiz), label: 'Trade'),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
-            label: 'Profil',
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
