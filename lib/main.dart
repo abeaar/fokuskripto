@@ -1,5 +1,8 @@
 // Contoh penggunaan di main.dart
 import 'package:flutter/material.dart';
+import 'model/coin.dart';
+import 'pages/LoginPage.dart';
+import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
 
 // Asumsikan kode CryptoListPage di atas ada di file yang sama atau diimpor
@@ -14,16 +17,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // 1. Ganti halaman utama ke HomePage
-      home: const HomePage(), // Panggil HomePage di sini
+
+      initialRoute: '/login_page',
+      routes: {
+        '/login_page': (context) => LoginPage(),
+        '/register_page': (context) => RegisterPage(),
+        '/home_page': (context) => HomePage(),
+      },
+
       theme: ThemeData(
         primarySwatch: Colors.blue, // Anda bisa tetap menggunakan ini
       ),
-      // 2. Routes Anda tetap dipertahankan
-      routes: {
-        // '/login': (context) => const LoginPage(),
-        // '/crypto_list': (context) => const CryptoListPage(), // Jika ingin akses CryptoListPage via route
-      },
+
     );
   }
 }
