@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fokuskripto/pages/Profile_page,.dart';
 import 'DashboardTab.dart'; // <- IMPORT BARU
 
 class ConverterTab extends StatelessWidget {
-  // Biarkan ini atau buat file terpisah nanti
   const ConverterTab({super.key});
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,6 @@ class ConverterTab extends StatelessWidget {
 }
 
 class WalletTabe extends StatelessWidget {
-  // Biarkan ini atau buat file terpisah nanti
   const WalletTabe({super.key});
   @override
   Widget build(BuildContext context) {
@@ -22,18 +21,6 @@ class WalletTabe extends StatelessWidget {
     );
   }
 }
-
-class ProfileTab extends StatelessWidget {
-  // Biarkan ini atau buat file terpisah nanti
-  const ProfileTab({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Ini adalah Tab profile', style: TextStyle(fontSize: 20)),
-    );
-  }
-}
-// --- Akhir Halaman Placeholder ---
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -47,7 +34,7 @@ class _HomePageState extends State<HomePage> {
 
   // Gunakan DashboardTab yang baru diimpor
   static const List<Widget> _widgetOptions = <Widget>[
-    DashboardTab(), // <- GUNAKAN DashboardTab YANG BARU
+    DashboardTab(),
     ConverterTab(),
     WalletTabe(),
   ];
@@ -64,13 +51,16 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder:
             (context) => Scaffold(
-              // Halaman profil akan memiliki Scaffold sendiri
               appBar: AppBar(
-                title: const Text('Profil Saya'),
+                title: const Text('Profil Saya'), // Judul untuk halaman profil
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                leading: IconButton(
+                  // Tambahkan tombol back secara eksplisit jika perlu
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
               ),
-              body:
-                  const ProfileTab(), // Menggunakan konten profil yang sudah didefinisikan
+              body: const ProfilePage(),
             ),
       ),
     );
