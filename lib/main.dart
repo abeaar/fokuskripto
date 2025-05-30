@@ -1,6 +1,5 @@
 // Contoh penggunaan di main.dart
 import 'package:flutter/material.dart';
-import 'model/coin.dart';
 import 'pages/HomePage.dart';
 
 // Asumsikan kode CryptoListPage di atas ada di file yang sama atau diimpor

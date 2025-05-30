@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-
-// Hapus placeholder DashboardTab, ConverterTab, ProfileTab yang lama jika ada di file ini.
-// Import file tab yang sebenarnya
 import 'DashboardTab.dart'; // <- IMPORT BARU
 
-// --- Halaman Placeholder untuk Tab Lain (jika belum dibuat file terpisah) ---
 class ConverterTab extends StatelessWidget {
   // Biarkan ini atau buat file terpisah nanti
   const ConverterTab({super.key});
@@ -85,7 +81,7 @@ class _HomePageState extends State<HomePage> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: const Color.fromARGB(255, 122, 118, 118),
         showUnselectedLabels: true,
         onTap: _onItemTapped,
       ),

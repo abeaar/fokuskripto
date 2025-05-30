@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'dart:convert';
-
-import '../model/coin.dart'; // Path ke model Coin
-import '../widgets/coin_list_item.dart'; // Path ke widget CoinListItem
+import '../model/coin.dart';
+import '../widgets/coin_list_item.dart';
+import '../services/api_service.dart';
+import '../widgets/top_coin.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
@@ -14,6 +13,8 @@ class DashboardTab extends StatefulWidget {
 }
 
 class _DashboardTabState extends State<DashboardTab> {
+  final ApiService _apiService = ApiService();
+
   bool _isLoading = true;
   String? _error;
   List<Coin> _coins = [];
@@ -30,77 +31,103 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   Future<void> _fetchCoins() async {
-    // Beritahu Flutter untuk rebuild jika widget masih ada di tree
     if (!mounted) return;
     setState(() {
       _isLoading = true;
-      _error = null; // Reset error setiap kali fetch
+      _error = null;
     });
-
-    const String apiUrl =
-        'https://be-projek-mobile-713031961242.us-central1.run.app/coins';
-    final uri = Uri.parse(apiUrl);
-
     try {
-      final response = await http.get(uri);
-      if (!mounted) return; // Cek lagi setelah await
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
-        setState(() {
-          _coins = jsonData.map((json) => Coin.fromJson(json)).toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _error = 'Gagal memuat data. Status: ${response.statusCode}';
-          _isLoading = false;
-        });
-      }
+      final fetchedCoins = await _apiService.fetchCoins();
+      if (!mounted) return;
+      setState(() {
+        _coins = fetchedCoins;
+        _isLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Terjadi error: ${e.toString()}';
+        _error = 'Terjadi kesalahan tidak terduga: ${e.toString()}';
         _isLoading = false;
       });
     }
+  }
+
+  // Widget baru untuk membangun bagian ringkasan koin
+  Widget _buildSummarySection() {
+    if (_coins.isEmpty) {
+      return const SizedBox.shrink(); // Tidak tampilkan apa-apa jika koin kosong
+    }
+    final topCoin = _coins.take(3).toList();
+    if (topCoin.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+          child: Text(
+            "Top Coin",
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12.0,
+          ), // Padding untuk Row
+          child: Row(
+            children: <Widget>[
+              // Eksplisit membuat List<Widget>
+              ...topCoin.map((coin) {
+                // Spread hasil map
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: TopCoin(coin: coin, priceFormatter: _priceFormatter),
+                  ),
+                );
+              }).toList(),
+              ...List.generate(
+                3 - topCoin.length,
+                (index) => Expanded(child: Container()),
+                growable: false,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildContent() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_error != null) {
-      // Tambahkan tombol coba lagi
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(_error!, textAlign: TextAlign.center),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _fetchCoins, // Panggil fetchCoins lagi
-                child: const Text('Coba Lagi'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    if (_coins.isEmpty) {
-      return const Center(child: Text('Tidak ada data koin.'));
-    }
-
-    // Nanti kita bisa tambahkan elemen dashboard lain di sini, di atas ListView
     return RefreshIndicator(
-      onRefresh: _fetchCoins, // Fungsi refresh
+      onRefresh: _fetchCoins,
       child: ListView.builder(
-        itemCount: _coins.length,
+        itemCount: 1 + 1 + _coins.length, // Summary + Judul List + Item List
         itemBuilder: (context, index) {
+          if (index == 0) {
+            return _buildSummarySection();
+          }
+          if (index == 1) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+              child: Text(
+                "Semua Koin",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            );
+          }
+          final coinIndex = index - 2;
           return CoinListItem(
-            coin: _coins[index],
+            coin: _coins[coinIndex],
             priceFormatter: _priceFormatter,
           );
         },
@@ -110,9 +137,6 @@ class _DashboardTabState extends State<DashboardTab> {
 
   @override
   Widget build(BuildContext context) {
-    // Tidak perlu Scaffold di sini karena DashboardTab adalah bagian dari HomePage
-    // yang sudah memiliki Scaffold.
-    // Kita tambahkan AppBar di HomePage jika ingin judul spesifik per tab.
     return _buildContent();
   }
 }
