@@ -1,8 +1,18 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // IMPORT PACKAGE SHARED PREFERENCES
-
+import 'dart:convert'; // Untuk utf8.encode
+import 'package:crypto/crypto.dart'; // Untuk sha256
 import './HomePage.dart';
+
+const String spIsLoginKey = 'isLogin';
+const String spUsernameKey = 'username';
+
+Future<String> _hashPassword(String password) async {
+  var bytes = utf8.encode(password);
+  var digest = sha256.convert(bytes);
+  return digest.toString();
+}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,16 +35,24 @@ class _LoginPageState extends State<LoginPage> {
     checkIfAlreadyLogin();
   }
 
+  @override
+  void dispose() {
+    _username.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
   checkIfAlreadyLogin() async {
     SharedPreferences loginData = await SharedPreferences.getInstance();
-    newUser = (loginData.getBool('isLogin') ?? true);
+    // Logika diperbaiki: jika 'isLogin' null, anggap false (belum login)
+    bool isLoggedIn = loginData.getBool(spIsLoginKey) ?? false;
 
-    if(newUser == false) {
+    if (isLoggedIn) {
+      if (!mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/dashboard',
         (route) => false,
-        arguments: "Successfully logged in"
       );
     }
   }
@@ -42,27 +60,38 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     if (formKey.currentState!.validate()) {
       SharedPreferences loginData = await SharedPreferences.getInstance();
-      String? registeredUsername = loginData.getString('registered_username');
-      String? registeredPassword = loginData.getString('registered_password');
+      String inputUsername = _username.text.trim();
+      String inputPassword = _password.text.trim();
 
-      // Cek apakah user sudah pernah registrasi
-      if ((registeredUsername != null && registeredPassword != null) &&
-        _username.text.trim() == registeredUsername &&
-        _password.text.trim() == registeredPassword) {
-        await loginData.setBool('isLogin', true);
-        await loginData.setString('username', _username.text.trim());
+      String hashedInputPassword = await _hashPassword(inputPassword);
+      String? storedHashedPassword = loginData.getString(
+        'password_$inputUsername',
+      );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Berhasil login'), backgroundColor: Colors.green,),
-        );
+      if (storedHashedPassword != null &&
+          storedHashedPassword == hashedInputPassword) {
+        await loginData.setBool(spIsLoginKey, true);
+        // Simpan username yang sedang aktif untuk digunakan di ProfilePage dll.
+        await loginData.setString(spUsernameKey, inputUsername);
         if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Berhasil login'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
       } else {
+        // Login gagal
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('login gagal'), backgroundColor: Colors.red,),
+          const SnackBar(
+            content: Text('Login gagal: Username atau password salah'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -75,17 +104,24 @@ class _LoginPageState extends State<LoginPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: SizedBox(
-            height: 320,
+            height: 330,
             child: Form(
               key: formKey,
               child: Column(
                 children: [
-                  Text("Silahkan Login", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blueAccent)),
-                  SizedBox( height: 24 ),
+                  Text(
+                    "Silahkan Login",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  SizedBox(height: 24),
 
                   TextFormField(
                     validator: (value) {
-                      if(value==null || value.isEmpty) {
+                      if (value == null || value.isEmpty) {
                         return "Silahkan isi";
                       }
                       return null;
@@ -95,15 +131,15 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person),
                       labelText: "Username",
-                      counterText: ""
+                      counterText: "",
                     ),
                     maxLength: 64,
                   ),
-                  SizedBox( height: 14 ),
+                  SizedBox(height: 14),
 
                   TextFormField(
                     validator: (value) {
-                      if(value==null || value.isEmpty) {
+                      if (value == null || value.isEmpty) {
                         return "Silahkan isi";
                       }
                       return null;
@@ -119,28 +155,31 @@ class _LoginPageState extends State<LoginPage> {
                           setState(() {
                             isObscure = !isObscure;
                           });
-                        }, 
-                        icon: Icon(isObscure ? Icons.visibility : Icons.visibility_off)) 
+                        },
+                        icon: Icon(
+                          isObscure ? Icons.visibility : Icons.visibility_off,
+                        ),
+                      ),
                     ),
                     maxLength: 12,
                   ),
-                  SizedBox( height: 14 ),
+                  SizedBox(height: 14),
 
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _login, 
-                      child: Text("Login", style: TextStyle(fontSize: 18),),
+                      onPressed: _login,
+                      child: Text("Login", style: TextStyle(fontSize: 18)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox( height: 10 ),
+                  SizedBox(height: 10),
 
                   SizedBox(
                     width: double.infinity,
@@ -148,28 +187,26 @@ class _LoginPageState extends State<LoginPage> {
                       child: RichText(
                         text: TextSpan(
                           text: "Don't have an account? ",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                          ),
-                          children: <TextSpan> [
+                          style: TextStyle(color: Colors.black, fontSize: 16),
+                          children: <TextSpan>[
                             TextSpan(
                               text: "Signup",
                               style: TextStyle(
                                 color: Colors.blue,
                                 decoration: TextDecoration.underline,
-                                fontSize: 16
+                                fontSize: 16,
                               ),
-                              recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context, 
-                                  '/register_page', 
-                                  (route) => true
-                                );
-                              }
-                            )
-                          ]
+                              recognizer:
+                                  TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        '/register_page',
+                                        (route) => true,
+                                      );
+                                    },
+                            ),
+                          ],
                         ),
                       ),
                     ),
