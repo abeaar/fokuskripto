@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fokuskripto/pages/Profile_Page,.dart';
-import 'DashboardTab.dart'; 
-import 'MarketTab.dart'; 
+import 'package:fokuskripto/pages/Profile_Page.dart';
+import 'DashboardTab.dart';
+import 'MarketTab.dart';
 import './WalletTab.dart';
 
 class ConverterTab extends StatelessWidget {
