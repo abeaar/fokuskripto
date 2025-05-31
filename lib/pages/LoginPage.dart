@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // IMPORT PACKAGE SHARED PREFERENCES
 import 'dart:convert'; // Untuk utf8.encode
 import 'package:crypto/crypto.dart'; // Untuk sha256
+import 'package:hive_flutter/hive_flutter.dart';
+
 import './HomePage.dart';
 
 const String spIsLoginKey = 'isLogin';
@@ -74,12 +76,25 @@ class _LoginPageState extends State<LoginPage> {
         // Simpan username yang sedang aktif untuk digunakan di ProfilePage dll.
         await loginData.setString(spUsernameKey, inputUsername);
         if (!mounted) return;
+
+        var userWallet = await Hive.openBox('wallet_$inputUsername');
+        if(userWallet.isEmpty) {
+          await userWallet.put('IDR', {
+            'name': 'Rupiah',
+            'short_name': 'IDR',
+            'image_url': 'https://cdn-icons-png.flaticon.com/512/13893/13893854.png',
+            'amount': 100000,
+            'price_in_idr': 1,
+          });
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Berhasil login'),
             backgroundColor: Colors.green,
           ),
         );
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
