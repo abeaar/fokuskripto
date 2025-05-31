@@ -20,7 +20,6 @@ class BaseNetworkService {
   Future<dynamic> get(String url) async {
     final uri = Uri.parse(url);
     print('BaseNetworkService: Mengirim GET request ke $url'); // Logging
-
     try {
       final response = await http
           .get(uri)
@@ -37,7 +36,6 @@ class BaseNetworkService {
       );
     }
   }
-
   dynamic _processResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) {
