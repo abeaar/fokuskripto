@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'pages/LoginPage.dart';
 import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
@@ -26,9 +25,7 @@ class MyApp extends StatelessWidget {
         '/home_page': (context) => HomePage(),
       },
 
-      theme: ThemeData(
-        primarySwatch: Colors.blue, // Anda bisa tetap menggunakan ini
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
     );
   }
 }
