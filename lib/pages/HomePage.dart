@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fokuskripto/pages/Profile_page,.dart';
+import 'package:fokuskripto/pages/Profile_page.dart';
+
 import 'DashboardTab.dart'; // <- IMPORT BARU
+import './WalletTab.dart';
 
 class ConverterTab extends StatelessWidget {
   const ConverterTab({super.key});
@@ -8,16 +10,6 @@ class ConverterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text('Ini adalah Tab Konverter', style: TextStyle(fontSize: 20)),
-    );
-  }
-}
-
-class WalletTabe extends StatelessWidget {
-  const WalletTabe({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Ini adalah Tab wallet', style: TextStyle(fontSize: 20)),
     );
   }
 }
@@ -36,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardTab(),
     ConverterTab(),
-    WalletTabe(),
+    WalletTab(),
   ];
 
   void _onItemTapped(int index) {
@@ -95,7 +87,6 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
-        // ... (sisa kode BottomNavigationBar tetap sama)
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.swap_horiz), label: 'Trade'),
