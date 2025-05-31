@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fokuskripto/pages/Profile_Page,.dart';
-import 'DashboardTab.dart'; // <- IMPORT BARU
-import 'MarketTab.dart'; // <- IMPORT BARU
+import 'DashboardTab.dart'; 
+import 'MarketTab.dart'; 
+import './WalletTab.dart';
 
 class ConverterTab extends StatelessWidget {
   const ConverterTab({super.key});
@@ -9,16 +10,6 @@ class ConverterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text('Ini adalah Tab Konverter', style: TextStyle(fontSize: 20)),
-    );
-  }
-}
-
-class WalletTab extends StatelessWidget {
-  const WalletTab({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Ini adalah Tab wallet', style: TextStyle(fontSize: 20)),
     );
   }
 }
