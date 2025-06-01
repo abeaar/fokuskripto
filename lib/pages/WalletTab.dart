@@ -14,7 +14,6 @@ class WalletTab extends StatefulWidget {
 }
 
 class _WalletTabState extends State<WalletTab> {
-  // Hanya state untuk UI, bukan data kalkulasi
   late Box _userWalletBox;
   bool _isLoading = true;
   String _username = '';
