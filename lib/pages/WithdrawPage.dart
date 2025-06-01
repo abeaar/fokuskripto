@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:fokuskripto/services/notification_service.dart';
 
 class WithdrawPage extends StatefulWidget {
   // Terima box dari halaman sebelumnya
@@ -15,7 +16,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
   final _amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _handleWithdraw() {
+  Future<void> _handleWithdraw() async {
     if (_formKey.currentState?.validate() ?? false) {
       final double withdrawAmount = double.parse(_amountController.text);
       final Map idrAsset = widget.walletBox.get('IDR');
@@ -38,6 +39,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
       // Simpan kembali data yang sudah diperbarui
       widget.walletBox.put('IDR', idrAsset);
 
+      await NotificationService().showWithdrawalSuccessNotification(withdrawAmount);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Penarikan sebesar IDR $withdrawAmount berhasil!'), backgroundColor: Colors.green,),
       );
