@@ -37,14 +37,10 @@ class _DepositPageState extends State<DepositPage> {
       );
 
       // Hitung saldo baru
-      final double currentAmount =
-          (idrAsset['amount'] as num?)?.toDouble() ??
-          0.0; // Ambil amount saat ini
-      double newIdrAmount = currentAmount + depositAmount;
-      // BULATKAN SEBELUM SIMPAN KE HIVE
-      idrAsset['amount'] = double.parse(
-        newIdrAmount.toStringAsFixed(0),
-      ); // Bulatkan ke 0 desimal untuk IDR
+      final currentAmount = (idrAsset['amount'] as num).toDouble();
+      idrAsset['amount'] = currentAmount + depositAmount;
+
+      // Simpan kembali data yang sudah diperbarui ke Hive
       widget.walletBox.put('IDR', idrAsset);
 
       // Tampilkan notifikasi sukses

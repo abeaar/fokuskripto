@@ -15,10 +15,10 @@ class TradeService with ChangeNotifier {
   late Box _userWalletBox;
   String _username = '';
 
-  // State yang akan dikelola oleh service ini
   TradeMode currentTradeMode = TradeMode.buy;
-  String selectedCryptoId = 'bitcoin'; // Default
-  String selectedCryptoSymbol = 'BTC'; // Default
+  List<CoinGeckoMarketModel> tradableCoins = [];
+  String selectedCryptoId = '';
+  String selectedCryptoSymbol = '';
   CoinGeckoMarketModel? _selectedCryptoMarketData;
 
   ValueNotifier<double> currentMarketPrice = ValueNotifier(0.0);
@@ -45,19 +45,6 @@ class TradeService with ChangeNotifier {
   NumberFormat get priceFormatter => _priceFormatter;
   NumberFormat get cryptoAmountFormatter => _cryptoAmountFormatter;
 
-  // Daftar koin yang bisa di-trade (bisa juga diambil dari API atau konfigurasi)
-  List<Map<String, String>> availableCryptos = [
-    {
-      'id': 'bitcoin',
-      'symbol': 'BTC',
-      'name': 'Bitcoin',
-    }, // Tambahkan 'name' jika belum ada
-    {'id': 'ethereum', 'symbol': 'ETH', 'name': 'Ethereum'},
-    {'id': 'binancecoin', 'symbol': 'BNB', 'name': 'BNB'},
-    {'id': 'ripple', 'symbol': 'XRP', 'name': 'XRP'},
-    {'id': 'cardano', 'symbol': 'ADA', 'name': 'Cardano'},
-  ];
-
   StreamSubscription? _idrBalanceSubscription;
   StreamSubscription? _cryptoBalanceSubscription;
 
@@ -75,6 +62,28 @@ class TradeService with ChangeNotifier {
     }
     _userWalletBox = await Hive.openBox('wallet_$_username');
 
+    try {
+      tradableCoins = await _apiServiceGecko.fetchCoinMarkets(
+        vsCurrency: 'idr',
+        perPage: 50, // Ambil 50 koin teratas misalnya, sesuaikan jumlahnya
+      );
+      if (tradableCoins.isNotEmpty) {
+        // Atur koin pilihan awal ke koin pertama dari daftar
+        _setSelectedCoin(tradableCoins.first);
+        await fetchCryptoMarketDataAndUpdatePrice(
+          selectedCryptoId,
+          calledByPairChange: false,
+        ); // Harga untuk koin default
+      } else {
+        // Handle jika tidak ada koin yang bisa diambil
+        print("TradeService: Tidak ada koin yang bisa diambil dari API.");
+        // Anda mungkin ingin mengatur selectedCryptoId/Symbol ke placeholder atau handle error
+      }
+    } catch (e) {
+      print("TradeService: Gagal mengambil daftar koin tradable: $e");
+      // Handle error, mungkin tampilkan pesan di UI melalui state error
+    }
+
     _loadInitialBalancesFromHive();
 
     await fetchCryptoMarketDataAndUpdatePrice(
@@ -84,6 +93,12 @@ class TradeService with ChangeNotifier {
     _startListeningToBalances();
     isLoadingBalances = false;
     notifyListeners();
+  }
+
+  void _setSelectedCoin(CoinGeckoMarketModel coin) {
+    selectedCryptoId = coin.id;
+    selectedCryptoSymbol = coin.symbol.toUpperCase();
+    _selectedCryptoMarketData = coin;
   }
 
   void _loadInitialBalancesFromHive() {
@@ -149,6 +164,13 @@ class TradeService with ChangeNotifier {
     // }
   }
 
+  void setTradeMode(TradeMode mode) {
+    currentTradeMode = mode;
+    amountInputString.value = "";
+    totalInputString.value = "";
+    notifyListeners(); // Beri tahu UI bahwa mode dan mungkin field telah berubah
+  }
+
   @override
   void dispose() {
     _idrBalanceSubscription?.cancel();
@@ -200,30 +222,36 @@ class TradeService with ChangeNotifier {
   }
 
   void selectCrypto(String newCryptoId) {
-    final selected = availableCryptos.firstWhere(
-      (c) => c['id'] == newCryptoId,
-      orElse: () => availableCryptos.first,
+    final selectedCoinData = tradableCoins.firstWhere(
+      (c) => c.id == newCryptoId,
+      orElse:
+          () =>
+              tradableCoins.isNotEmpty
+                  ? tradableCoins.first
+                  : throw Exception(
+                    "Tidak ada koin tradable",
+                  ), // Handle jika error
     );
-    selectedCryptoId = newCryptoId;
-    selectedCryptoSymbol = selected['symbol']!;
+
+    _setSelectedCoin(selectedCoinData);
 
     amountInputString.value = "";
     totalInputString.value = "";
 
     notifyListeners();
-    fetchCryptoMarketDataAndUpdatePrice(
-      selectedCryptoId,
-      calledByPairChange: true,
-    );
+
+    currentMarketPrice.value = _selectedCryptoMarketData?.currentPrice ?? 0.0;
+    if (priceInputString.value.isEmpty ||
+        priceInputString.value == "Error" ||
+        priceInputString.value == "0" ||
+        true /*selalu update saat ganti koin*/ ) {
+      priceInputString.value = _priceFormatter
+          .format(currentMarketPrice.value)
+          .replaceAll('Rp ', '')
+          .replaceAll('.', '');
+    }
+
     _listenToSelectedCryptoBalance();
-  }
-
-  void setTradeMode(TradeMode mode) {
-    currentTradeMode = mode;
-    // Mungkin perlu membersihkan field atau logika lain saat mode berubah
-    amountInputString.value = "";
-    totalInputString.value = "";
-    notifyListeners();
   }
 
   void calculateTotalFromAmount(String amountStr) {
@@ -382,7 +410,6 @@ class TradeService with ChangeNotifier {
         idrAssetMap['amount'] = currentIdrAmount + calculatedTotal;
       }
 
-      // Simpan perubahan kembali ke Hive
       await _userWalletBox.put('IDR', idrAssetMap);
 
       if ((cryptoAssetMap['amount'] as num).toDouble() < 0.1 &&
@@ -392,7 +419,6 @@ class TradeService with ChangeNotifier {
           "TradeService: Menghapus $cryptoKey dari wallet karena saldo habis setelah SELL.",
         );
       } else {
-        // Untuk BUY, atau SELL yang saldonya tidak habis, atau jika Anda tidak ingin menghapus saat saldo 0
         await _userWalletBox.put(cryptoKey, cryptoAssetMap);
         print(
           "TradeService: Mengupdate $cryptoKey di wallet dengan saldo ${(cryptoAssetMap['amount'] as num).toDouble()}.",

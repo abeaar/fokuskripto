@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Import Provider
-import '../services/trade_service.dart'; // Import TradeService
+import 'package:provider/provider.dart';
+import '../services/trade_service.dart';
 import '../widgets/trade_input_group.dart';
 import '../widgets/percentage_buttons.dart';
+import '../model/coinGecko.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 class TradeTabProvider extends StatelessWidget {
   const TradeTabProvider({super.key});
@@ -128,14 +130,11 @@ class _TradeTabState extends State<TradeTab> {
 
   @override
   Widget build(BuildContext context) {
-    final tradeService = Provider.of<TradeService>(
-      context,
-    ); // listen: true by default
+    final tradeService = Provider.of<TradeService>(context); //
 
     if (tradeService.isLoadingBalances) {
       return const Center(child: CircularProgressIndicator());
     }
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -143,25 +142,65 @@ class _TradeTabState extends State<TradeTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButtonFormField<String>(
-              value: tradeService.selectedCryptoId,
-              decoration: const InputDecoration(
-                labelText: "Pilih Koin untuk Trading (vs IDR)",
+            DropdownSearch<CoinGeckoMarketModel>(
+              popupProps: PopupProps.menu(
+                // Bisa juga .dialog atau .modalBottomSheet
+                showSearchBox: true,
+                searchFieldProps: TextFieldProps(
+                  decoration: InputDecoration(
+                    labelText: "Cari Koin",
+                    hintText: "Ketik nama atau simbol koin...",
+                    border: OutlineInputBorder(),
+                  ),
+                  autofocus: true,
+                ),
+                itemBuilder: (context, coin, isSelected) {
+                  return ListTile(
+                    title: Text("${coin.name} (${coin.symbol.toUpperCase()})"),
+                  );
+                },
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.65,
+                ),
               ),
-              items:
-                  tradeService.availableCryptos.map((
-                    Map<String, String> crypto,
-                  ) {
-                    return DropdownMenuItem<String>(
-                      value: crypto['id']!,
-                      child: Text(crypto['symbol']!),
-                    );
-                  }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  tradeService.selectCrypto(newValue);
+              items: tradeService.tradableCoins,
+              itemAsString:
+                  (CoinGeckoMarketModel coin) =>
+                      "${coin.name} (${coin.symbol.toUpperCase()})",
+              selectedItem:
+                  tradeService.tradableCoins.isNotEmpty &&
+                          tradeService.selectedCryptoId.isNotEmpty
+                      ? tradeService.tradableCoins.firstWhere(
+                        (coin) => coin.id == tradeService.selectedCryptoId,
+                        orElse:
+                            () =>
+                                tradeService
+                                    .tradableCoins
+                                    .first, // Fallback jika tidak ketemu, atau null
+                      )
+                      : null, // Atau koin default pertama jika tradableCoins tidak kosong
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: "Pilih Koin untuk Trading (vs IDR)",
+                ),
+              ),
+              onChanged: (CoinGeckoMarketModel? selectedCoin) {
+                if (selectedCoin != null) {
+                  tradeService.selectCrypto(selectedCoin.id);
                 }
               },
+              enabled:
+                  tradeService.tradableCoins.isNotEmpty &&
+                  !tradeService.isLoadingBalances,
+              dropdownButtonProps: DropdownButtonProps(
+                tooltip:
+                    tradeService.tradableCoins.isEmpty &&
+                            tradeService.isLoadingBalances
+                        ? "Memuat koin..."
+                        : (tradeService.tradableCoins.isEmpty
+                            ? "Tidak ada koin"
+                            : "Pilih Koin"),
+              ),
             ),
             const SizedBox(height: 16),
             Row(
