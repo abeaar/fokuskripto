@@ -378,7 +378,6 @@ class TradeService with ChangeNotifier {
             _selectedCryptoMarketData?.image ?? cryptoAssetMap['image_url'];
         cryptoAssetMap['short_name'] = selectedCryptoSymbol.toUpperCase();
       } else {
-        // TradeMode.sell
         cryptoAssetMap['amount'] = currentCryptoAmount - amount;
         idrAssetMap['amount'] = currentIdrAmount + calculatedTotal;
       }
@@ -386,10 +385,8 @@ class TradeService with ChangeNotifier {
       // Simpan perubahan kembali ke Hive
       await _userWalletBox.put('IDR', idrAssetMap);
 
-      // --- PERBAIKAN LOGIKA PENYIMPANAN cryptoAssetMap ---
-      if ((cryptoAssetMap['amount'] as num).toDouble() < 0.00000001 &&
+      if ((cryptoAssetMap['amount'] as num).toDouble() < 0.1 &&
           currentTradeMode == TradeMode.sell) {
-        // Jika menjual dan saldo menjadi sangat kecil/nol
         await _userWalletBox.delete(cryptoKey);
         print(
           "TradeService: Menghapus $cryptoKey dari wallet karena saldo habis setelah SELL.",
@@ -409,7 +406,7 @@ class TradeService with ChangeNotifier {
     amountInputString.value = "";
     totalInputString.value = "";
 
-    notifyListeners(); 
+    notifyListeners();
 
     return null; // Menandakan sukses
   }

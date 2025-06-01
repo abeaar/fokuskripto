@@ -17,12 +17,14 @@ class _WithdrawPageState extends State<WithdrawPage> {
 
   void _handleWithdraw() {
     if (_formKey.currentState?.validate() ?? false) {
-      final double withdrawAmount = double.parse(_amountController.text);
+      final double withdrawAmount = double.parse(
+        _amountController.text.replaceAll(',', '.'),
+      );
       final Map idrAsset = widget.walletBox.get('IDR');
       final currentAmount = (idrAsset['amount'] as num).toDouble();
 
       // Validasi tambahan: Cek apakah saldo mencukupi
-      if (withdrawAmount > currentAmount) {
+      if (withdrawAmount > currentAmount + 0.0000001) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -33,13 +35,18 @@ class _WithdrawPageState extends State<WithdrawPage> {
         );
         return; // Hentikan proses jika saldo kurang
       }
-
-      // Hitung saldo baru
-      idrAsset['amount'] = currentAmount - withdrawAmount;
-
-      // Simpan kembali data yang sudah diperbarui
+      double newAmount = currentAmount - withdrawAmount;
+      if (newAmount.abs() < 0.0000001) {
+        // Jika sisa saldo sangat kecil, anggap 0
+        newAmount = 0.0;
+      } else {
+        // Bulatkan saldo IDR ke 0 atau 2 desimal sebelum disimpan
+        newAmount = double.parse(
+          newAmount.toStringAsFixed(0),
+        ); // Bulatkan ke 0 desimal untuk IDR
+      }
+      idrAsset['amount'] = newAmount;
       widget.walletBox.put('IDR', idrAsset);
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

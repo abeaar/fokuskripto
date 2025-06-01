@@ -57,7 +57,6 @@ class _WalletTabState extends State<WalletTab> {
       );
     }
 
-    // ValueListenableBuilder sekarang membungkus semua widget yang bergantung pada data wallet
     return ValueListenableBuilder(
       valueListenable: _userWalletBox.listenable(),
       builder: (context, Box box, _) {
@@ -156,10 +155,6 @@ class _WalletTabState extends State<WalletTab> {
           ],
         ),
         const SizedBox(height: 2),
-        Text(
-          _isBalanceVisible ? '≈ $assetInBtc BTC' : '≈ ******** BTC',
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
-        ),
       ],
     );
   }
