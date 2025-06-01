@@ -87,30 +87,43 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: IndexedStack(
+        index: _selectedIndex, // Index dari widget yang ingin ditampilkan
+        children: _widgetOptions, // List semua widget tab Anda
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
+            icon: Icon(
+              Icons.home_outlined,
+            ), // Anda bisa ganti dengan Icons.home_filled jika mau
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.analytics_outlined),
+            icon: Icon(
+              Icons.analytics_outlined,
+            ), // atau Icons.store_mall_directory_outlined
             label: 'Market',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.swap_horiz_outlined),
+            icon: Icon(Icons.swap_horiz_outlined), // atau Icons.swap_horiz
             label: 'Trade',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.wallet_outlined),
+            icon: Icon(
+              Icons.wallet_outlined,
+            ), // atau Icons.account_balance_wallet_outlined
             label: 'Wallet',
           ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: const Color.fromARGB(255, 122, 118, 118),
-        showUnselectedLabels: true,
+        showUnselectedLabels:
+            true, // Pastikan ini true agar label selalu tampil
+        type:
+            BottomNavigationBarType
+                .fixed, // Baik untuk 3-4 item agar perilaku konsisten
         onTap: _onItemTapped,
       ),
     );
