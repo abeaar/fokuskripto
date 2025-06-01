@@ -32,62 +32,33 @@ class _WithdrawPageState extends State<WithdrawPage> {
   }
 
   Future<void> _handleWithdraw() async {
-
     if (_formKey.currentState?.validate() ?? false) {
-      final double withdrawAmount =
-          double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
+      final double withdrawAmount = double.parse(_amountController.text);
+      final Map idrAsset = widget.walletBox.get('IDR');
+      final currentAmount = (idrAsset['amount'] as num).toDouble();
 
-      final Map idrAssetFromHive = widget.walletBox.get(
-        'IDR',
-        defaultValue: {'amount': 0},
-      );
-      final Map idrAsset = Map.from(idrAssetFromHive);
-      final double currentAmount =
-          (idrAsset['amount'] as num?)?.toDouble() ?? 0.0;
-      if (withdrawAmount > currentAmount + 0.0000001) {
+      // Validasi tambahan: Cek apakah saldo mencukupi
+      if (withdrawAmount > currentAmount) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Saldo tidak mencukupi. Saldo saat ini: IDR ${NumberFormat('#,##0', 'id_ID').format(currentAmount)}',
-            ),
+          const SnackBar(
+            content: Text('Saldo tidak mencukupi untuk melakukan penarikan.'),
             backgroundColor: Colors.red,
           ),
         );
-        return;
+        return; // Hentikan proses jika saldo kurang
       }
-
-      double newAmount = currentAmount - withdrawAmount;
-
-      if (newAmount.abs() < 0.01) {
-        newAmount = 0.0;
-      } else {
-        idrAsset['amount'] =
-            newAmount
-                .round(); // Simpan sebagai integer setelah pembulatan akhir
-      }
-      if (newAmount != 0.0) {
-        idrAsset['amount'] =
-            newAmount
-                .round(); // Atau double.parse(newAmount.toStringAsFixed(0))
-      } else {
-        idrAsset['amount'] = 0; // Simpan sebagai integer 0
-      }
-
+      idrAsset['amount'] = currentAmount - withdrawAmount;
       widget.walletBox.put('IDR', idrAsset);
-
-      await NotificationService().showWithdrawalSuccessNotification(withdrawAmount);
+      await NotificationService().showWithdrawalSuccessNotification(
+        withdrawAmount,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Penarikan sebesar IDR ${NumberFormat('#,##0', 'id_ID').format(withdrawAmount)} berhasil! Sisa saldo: IDR ${NumberFormat('#,##0', 'id_ID').format(newAmount.round())}',
-          ),
+          content: Text('Penarikan sebesar IDR $withdrawAmount berhasil!'),
           backgroundColor: Colors.green,
         ),
       );
-
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      Navigator.pop(context);
     }
   }
 

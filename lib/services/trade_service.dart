@@ -194,8 +194,7 @@ class TradeService with ChangeNotifier {
       final List<CoinGeckoMarketModel> coinDataList = await _apiServiceGecko
           .fetchCoinMarkets(ids: cryptoId, vsCurrency: 'idr');
       if (coinDataList.isNotEmpty) {
-        _selectedCryptoMarketData =
-            coinDataList.first; // Simpan market data lengkap
+        _selectedCryptoMarketData = coinDataList.first;
         currentMarketPrice.value = _selectedCryptoMarketData!.currentPrice;
         if (calledByPairChange ||
             priceInputString.value.isEmpty ||
@@ -255,9 +254,9 @@ class TradeService with ChangeNotifier {
   }
 
   void calculateTotalFromAmount(String amountStr) {
-    amountInputString.value = amountStr; // Update nilai stringnya dulu
+    amountInputString.value = amountStr;
     final double price =
-        double.tryParse(priceInputString.value.replaceAll('.', '')) ?? 0.0;
+        currentMarketPrice.value; // <--- Gunakan harga pasar aktual
     final double amount =
         double.tryParse(amountStr.replaceAll(',', '.')) ?? 0.0;
     final double total = price * amount;
@@ -265,24 +264,20 @@ class TradeService with ChangeNotifier {
         .format(total)
         .replaceAll('Rp ', '')
         .replaceAll('.', '');
-    notifyListeners(); // Meskipun totalInputString adalah ValueNotifier, ini untuk jaga-jaga jika ada listener lain
   }
 
   void calculateAmountFromTotal(String totalStr) {
     totalInputString.value = totalStr;
-    final double price =
-        double.tryParse(priceInputString.value.replaceAll('.', '')) ?? 0.0;
+    final double price = currentMarketPrice.value;
     final double total = double.tryParse(totalStr.replaceAll('.', '')) ?? 0.0;
-
     if (price > 0) {
       final double amount = total / price;
       amountInputString.value = _cryptoAmountFormatter
           .format(amount)
-          .replaceAll(',', ''); // Hapus koma dari formatter jika ada
+          .replaceAll(',', '');
     } else {
       amountInputString.value = "";
     }
-    notifyListeners();
   }
 
   void calculatePriceFromTotalAndAmount(String priceStr) {
