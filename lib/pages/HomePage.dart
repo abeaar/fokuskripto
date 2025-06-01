@@ -2,17 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fokuskripto/pages/Profile_Page.dart';
 import 'DashboardTab.dart';
 import 'MarketTab.dart';
-import './WalletTab.dart';
-
-class ConverterTab extends StatelessWidget {
-  const ConverterTab({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Ini adalah Tab Konverter', style: TextStyle(fontSize: 20)),
-    );
-  }
-}
+import 'WalletTab.dart';
+import 'TradeTab.dart'; // Pastikan TradeTab sudah diimpor
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,11 +15,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  // Gunakan DashboardTab yang baru diimpor
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardTab(),
     MarketTab(),
-    ConverterTab(),
+    TradeTabProvider(),
     WalletTab(),
   ];
 
@@ -68,7 +58,7 @@ class _HomePageState extends State<HomePage> {
     } else if (_selectedIndex == 1) {
       title = 'Market';
     } else if (_selectedIndex == 2) {
-      title = 'Konverter';
+      title = 'Trade';
     } else if (_selectedIndex == 3) {
       title = 'Wallet';
     }

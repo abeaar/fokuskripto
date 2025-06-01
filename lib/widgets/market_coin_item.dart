@@ -29,27 +29,8 @@ class MarketCoinListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
         child: Row(
           children: [
-            Image.network(
-              coin.image,
-              width: 36,
-              height: 36,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.error_outline, size: 36);
-              },
-            ),
             const SizedBox(width: 12),
             Expanded(
-              flex: 3, // Beri ruang lebih untuk Nama & Simbol
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -72,7 +53,7 @@ class MarketCoinListItem extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              flex: 2, // Ruang untuk % perubahan
+              flex: 3, // Ruang untuk % perubahan
               child: Text(
                 "${(coin.priceChangePercentage24h ?? 0).toStringAsFixed(2)}%",
                 textAlign: TextAlign.end,
