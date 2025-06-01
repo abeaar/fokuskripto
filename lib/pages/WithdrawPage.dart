@@ -24,8 +24,10 @@ class _WithdrawPageState extends State<WithdrawPage> {
       // Validasi tambahan: Cek apakah saldo mencukupi
       if (withdrawAmount > currentAmount) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Saldo tidak mencukupi untuk melakukan penarikan.'),
+          SnackBar(
+            content: Text(
+              'Saldo tidak mencukupi untuk melakukan penarikan. $currentAmount',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -39,13 +41,18 @@ class _WithdrawPageState extends State<WithdrawPage> {
       widget.walletBox.put('IDR', idrAsset);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Penarikan sebesar IDR $withdrawAmount berhasil!'), backgroundColor: Colors.green,),
+        SnackBar(
+          content: Text(
+            'Penarikan sebesar IDR $withdrawAmount berhasil! sisa uang sebesar $currentAmount',
+          ),
+          backgroundColor: Colors.green,
+        ),
       );
 
       Navigator.pop(context);
     }
   }
-  
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -55,13 +62,14 @@ class _WithdrawPageState extends State<WithdrawPage> {
   @override
   Widget build(BuildContext context) {
     // Ambil saldo saat ini untuk ditampilkan
-    final Map idrAsset = widget.walletBox.get('IDR', defaultValue: {'amount': 0.0});
+    final Map idrAsset = widget.walletBox.get(
+      'IDR',
+      defaultValue: {'amount': 0.0},
+    );
     final currentBalance = (idrAsset['amount'] as num).toDouble();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tarik Saldo'),
-      ),
+      appBar: AppBar(title: const Text('Tarik Saldo')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -69,7 +77,9 @@ class _WithdrawPageState extends State<WithdrawPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Saldo Anda saat ini: IDR ${currentBalance.toStringAsFixed(0)}'),
+              Text(
+                'Saldo Anda saat ini: IDR ${currentBalance.toStringAsFixed(0)}',
+              ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _amountController,
