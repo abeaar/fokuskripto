@@ -39,7 +39,11 @@ class _WalletTabState extends State<WalletTab> {
   // --- HAPUS FUNGSI _calculateTotalValue() DARI STATE ---
 
   String _formatCurrency(double value) {
-    final format = NumberFormat.currency(locale: 'id_ID', symbol: 'IDR ', decimalDigits: 0);
+    final format = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'IDR ',
+      decimalDigits: 0,
+    );
     return format.format(value);
   }
 
@@ -60,14 +64,18 @@ class _WalletTabState extends State<WalletTab> {
         double totalAssetValue = 0;
         for (var key in box.keys) {
           final asset = box.get(key);
-          if (asset != null && asset['amount'] is num && asset['price_in_idr'] is num) {
-            totalAssetValue += (asset['amount'] as num).toDouble() * (asset['price_in_idr'] as num).toDouble();
+          if (asset != null &&
+              asset['amount'] is num &&
+              asset['price_in_idr'] is num) {
+            totalAssetValue +=
+                (asset['amount'] as num).toDouble() *
+                (asset['price_in_idr'] as num).toDouble();
           }
         }
 
         const btcPriceInIdr = 1720499178; // Di aplikasi nyata, ini dari API
         final assetInBtc = (totalAssetValue / btcPriceInIdr).toStringAsFixed(8);
-        
+
         // UI utama sekarang di-build di dalam builder ini
         return Scaffold(
           backgroundColor: Colors.grey[50],
@@ -84,7 +92,8 @@ class _WalletTabState extends State<WalletTab> {
                 Row(
                   children: [
                     Icon(
-                      Icons.account_balance_wallet_outlined, // Anda bisa ganti icon ini
+                      Icons
+                          .account_balance_wallet_outlined, // Anda bisa ganti icon ini
                       color: Colors.grey[800],
                       size: 20,
                     ),
@@ -109,7 +118,7 @@ class _WalletTabState extends State<WalletTab> {
       },
     );
   }
-  
+
   // Ubah method agar menerima data sebagai parameter, bukan dari state
   Widget _buildHeader(double totalAssetValue, String assetInBtc) {
     return Column(
@@ -173,9 +182,14 @@ class _WalletTabState extends State<WalletTab> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Deposit', style: TextStyle(color: Colors.white, fontSize: 16)),
+            child: const Text(
+              'Deposit',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -192,9 +206,18 @@ class _WalletTabState extends State<WalletTab> {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: BorderSide(color: Colors.grey.shade400),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Withdraw', style: TextStyle(color: Colors.blue, fontSize: 16, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Withdraw',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ],
@@ -205,7 +228,7 @@ class _WalletTabState extends State<WalletTab> {
     if (box.isEmpty) {
       return const Expanded(child: Center(child: Text('No assets found.')));
     }
-    
+
     return Expanded(
       child: ListView.builder(
         itemCount: box.length,
@@ -221,15 +244,19 @@ class _WalletTabState extends State<WalletTab> {
   Widget _buildCoinTile(dynamic asset) {
     // Formatter untuk jumlah koin (misal: 1,000.12345 BTC)
     final amountFormatter = NumberFormat('#,##0.########', 'en_US');
-    
+
     // 1. Definisikan formatter untuk mata uang Rupiah
-    final valueFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'IDR ', decimalDigits: 0);
+    final valueFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'IDR ',
+      decimalDigits: 0,
+    );
 
     // Ambil dan konversi nilai dengan aman
     final double amount = (asset['amount'] as num?)?.toDouble() ?? 0.0;
     final double price = (asset['price_in_idr'] as num?)?.toDouble() ?? 0.0;
     final double totalValuePerCoin = amount * price;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
@@ -237,9 +264,12 @@ class _WalletTabState extends State<WalletTab> {
           CircleAvatar(
             backgroundColor: Colors.transparent,
             radius: 20,
-            child: Image.network(asset['image_url'] ?? '', errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.error, color: Colors.red);
-            }),
+            child: Image.network(
+              asset['image_url'] ?? '',
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.error, color: Colors.red);
+              },
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -247,8 +277,13 @@ class _WalletTabState extends State<WalletTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  asset['name'] ?? 'No Name', // Tambahkan fallback jika nama null
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                  asset['name'] ??
+                      'No Name', // Tambahkan fallback jika nama null
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
                 ),
               ],
             ),
@@ -259,7 +294,11 @@ class _WalletTabState extends State<WalletTab> {
               Text(
                 // 2. Gunakan variabel 'amount' yang sudah aman, bukan asset['amount'] lagi
                 '${amountFormatter.format(amount)} ${asset['short_name'] ?? ''}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
               ),
               Text(
                 // Sekarang `valueFormatter` sudah bisa digunakan
