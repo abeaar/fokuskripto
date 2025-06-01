@@ -116,12 +116,10 @@ class _MarketTabState extends State<MarketTab> {
     return RefreshIndicator(
       onRefresh: _fetchMarketData,
       child: Column(
-        // Kolom untuk header list (jika diperlukan) dan listnya
         children: [
-          // Header untuk daftar koin (sesuai desain Anda)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
+              horizontal: 33.0,
               vertical: 10.0,
             ),
             child: Row(
