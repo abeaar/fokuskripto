@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fokuskripto/pages/Profile_page.dart';
-
-import 'DashboardTab.dart'; // <- IMPORT BARU
+import 'package:fokuskripto/pages/Profile_Page.dart';
+import 'DashboardTab.dart';
+import 'MarketTab.dart';
 import './WalletTab.dart';
 
 class ConverterTab extends StatelessWidget {
@@ -27,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   // Gunakan DashboardTab yang baru diimpor
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardTab(),
+    MarketTab(),
     ConverterTab(),
     WalletTab(),
   ];
@@ -65,8 +66,10 @@ class _HomePageState extends State<HomePage> {
     if (_selectedIndex == 0) {
       title = 'Dashboard';
     } else if (_selectedIndex == 1) {
-      title = 'Konverter';
+      title = 'Market';
     } else if (_selectedIndex == 2) {
+      title = 'Konverter';
+    } else if (_selectedIndex == 3) {
       title = 'Wallet';
     }
 
@@ -75,9 +78,8 @@ class _HomePageState extends State<HomePage> {
         title: Text(title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: <Widget>[
-          // Menambahkan actions untuk ikon di kanan AppBar
           IconButton(
-            icon: const Icon(Icons.person_outline), // Ikon profil
+            icon: const Icon(Icons.person_2_outlined), // Ikon profil
             tooltip: 'Profil Pengguna',
             onPressed: () {
               _navigateToProfile(context); // Panggil fungsi navigasi
@@ -85,17 +87,43 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: IndexedStack(
+        index: _selectedIndex, // Index dari widget yang ingin ditampilkan
+        children: _widgetOptions, // List semua widget tab Anda
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.swap_horiz), label: 'Trade'),
-          BottomNavigationBarItem(icon: Icon(Icons.wallet), label: 'Wallet'),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home_outlined,
+            ), // Anda bisa ganti dengan Icons.home_filled jika mau
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.analytics_outlined,
+            ), // atau Icons.store_mall_directory_outlined
+            label: 'Market',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.swap_horiz_outlined), // atau Icons.swap_horiz
+            label: 'Trade',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.wallet_outlined,
+            ), // atau Icons.account_balance_wallet_outlined
+            label: 'Wallet',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: const Color.fromARGB(255, 122, 118, 118),
-        showUnselectedLabels: true,
+        showUnselectedLabels:
+            true, // Pastikan ini true agar label selalu tampil
+        type:
+            BottomNavigationBarType
+                .fixed, // Baik untuk 3-4 item agar perilaku konsisten
         onTap: _onItemTapped,
       ),
     );

@@ -36,9 +36,7 @@ class MyApp extends StatelessWidget {
         '/home_page': (context) => HomePage(),
       },
 
-      theme: ThemeData(
-        primarySwatch: Colors.blue, // Anda bisa tetap menggunakan ini
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
     );
   }
 }
