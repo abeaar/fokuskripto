@@ -31,7 +31,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
     _currentIdrBalanceForMax = (idrAsset['amount'] as num?)?.toDouble() ?? 0.0;
   }
 
-  Future<void> _handleWithdraw() async {
+Future<void> _handleWithdraw() async {
     if (_formKey.currentState?.validate() ?? false) {
       final double withdrawAmount =
           double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
