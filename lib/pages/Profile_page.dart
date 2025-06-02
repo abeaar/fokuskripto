@@ -52,7 +52,6 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_currentLoggedInUsername.isNotEmpty) {
       _usernameDisplay =
           _currentLoggedInUsername; // Tampilkan username yang login
-      // Muat data spesifik pengguna menggunakan username sebagai prefix
       _fullName =
           prefs.getString('${_currentLoggedInUsername}_$spFullNameKeySuffix') ??
           "Belum diatur";
