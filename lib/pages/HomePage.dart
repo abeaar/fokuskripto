@@ -63,10 +63,12 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(title, style: TextStyle(color: const Color.fromARGB(255, 27, 102, 30)),),
+        backgroundColor: Colors.white,
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.person_2_outlined), // Ikon profil
+            icon: const Icon(Icons.person_2_outlined),
+            color: Color.fromARGB(255, 27, 102, 30), // Ikon profil
             tooltip: 'Profil Pengguna',
             onPressed: () {
               _navigateToProfile(context); // Panggil fungsi navigasi
