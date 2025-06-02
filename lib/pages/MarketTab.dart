@@ -5,6 +5,7 @@ import '../services/api_gecko.dart';
 import '../services/base_network.dart'; // Untuk NetworkException
 import '../widgets/market_coin_item.dart';
 
+
 class MarketTab extends StatefulWidget {
   const MarketTab({super.key});
 

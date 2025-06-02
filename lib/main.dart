@@ -25,7 +25,7 @@ Future <void> main() async {
       Permission.notification.request();
     }
   });
-
+  
   runApp(const MyApp());
 }
 

@@ -1,13 +1,12 @@
-// lib/widgets/market_coin_list_item.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../model/coinGecko.dart'; // Model baru kita
+import '../model/coinGecko.dart';
+import '../pages/CoinDetail.dart';
 
 class MarketCoinListItem extends StatelessWidget {
   final CoinGeckoMarketModel coin;
   final NumberFormat priceFormatter; // Untuk harga
   final NumberFormat volumeFormatter; // Untuk volume
-  // Tambahkan formatter lain jika perlu
 
   const MarketCoinListItem({
     super.key,
@@ -25,73 +24,87 @@ class MarketCoinListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       elevation: 1.5,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-        child: Row(
-          children: [
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    coin.symbol.toUpperCase(),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    coin.name,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CoinDetailPage(
+                coinId: coin.id,
+                coinName: coin.name, // Kirim nama untuk judul AppBar awal
+                coinSymbol: coin.symbol, // Kirim simbol jika perlu
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 3, // Ruang untuk % perubahan
-              child: Text(
-                "${(coin.priceChangePercentage24h ?? 0).toStringAsFixed(2)}%",
-                textAlign: TextAlign.end,
-                style: TextStyle(
-                  color: changeColor,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+          child: Row(
+            children: [
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      coin.symbol.toUpperCase(),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      coin.name,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 4, // Ruang untuk Harga & Volume
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    priceFormatter.format(coin.currentPrice),
-                    textAlign: TextAlign.end,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 3, // Ruang untuk % perubahan
+                child: Text(
+                  "${(coin.priceChangePercentage24h ?? 0).toStringAsFixed(2)}%",
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                    color: changeColor,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                   ),
-                  Text(
-                    "Vol ${volumeFormatter.format(coin.totalVolume ?? 0)}",
-                    textAlign: TextAlign.end,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[700],
-                      fontSize: 12,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 4, // Ruang untuk Harga & Volume
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      priceFormatter.format(coin.currentPrice),
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      "Vol ${volumeFormatter.format(coin.totalVolume ?? 0)}",
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[700],
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
