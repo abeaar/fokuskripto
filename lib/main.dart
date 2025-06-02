@@ -44,7 +44,52 @@ class MyApp extends StatelessWidget {
         '/home_page': (context) => HomePage(),
       },
 
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        colorScheme: ColorScheme.light(
+          primary: Color.fromARGB(255, 113, 156, 105),
+        ),
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          
+          elevation: 6,
+          shadowColor: Color.fromARGB(255, 240, 240, 240),
+
+          titleTextStyle: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(16),
+            ),
+          ),
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all<Color>(Color.fromARGB(255, 115, 236, 139)),
+            foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+
+            elevation: WidgetStateProperty.all<double>(2),
+
+            padding: WidgetStateProperty.all<EdgeInsets>(
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            ),
+
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0), // Atur radius sudut di sini
+              ),
+            ),
+          )
+        )
+
+
+      ),
       
     );
   }
