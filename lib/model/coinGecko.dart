@@ -1,19 +1,44 @@
-// lib/models/coin_gecko_market_model.dart
+import 'package:hive/hive.dart';
 
-class CoinGeckoMarketModel {
+part 'coinGecko.g.dart'; 
+
+@HiveType(typeId: 0) // typeId harus unik untuk setiap HiveObject di proyek Anda
+class CoinGeckoMarketModel extends HiveObject { // Tambahkan 'extends HiveObject' (opsional tapi berguna)
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String symbol;
+
+  @HiveField(2)
   final String name;
+
+  @HiveField(3)
   final String image;
+
+  @HiveField(4)
   final double currentPrice;
+
+  @HiveField(5)
   final double? marketCap;
+
+  @HiveField(6)
   final int? marketCapRank;
+
+  @HiveField(7)
   final double? totalVolume;
+
+  @HiveField(8)
   final double? high24h;
+
+  @HiveField(9)
   final double? low24h;
+
+  @HiveField(10)
   final double? priceChange24h;
+
+  @HiveField(11)
   final double? priceChangePercentage24h;
-  // Tambahkan field lain jika perlu dari respons CoinGecko
 
   CoinGeckoMarketModel({
     required this.id,
@@ -47,7 +72,6 @@ class CoinGeckoMarketModel {
     );
   }
 
-  // Mungkin berguna untuk debugging
   @override
   String toString() {
     return 'CoinGeckoMarketModel(id: $id, name: $name, currentPrice: $currentPrice)';
