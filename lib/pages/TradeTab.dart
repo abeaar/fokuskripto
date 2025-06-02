@@ -27,7 +27,6 @@ class TradeTab extends StatefulWidget {
 }
 
 class _TradeTabState extends State<TradeTab> {
-  final _priceController = TextEditingController();
   final _amountController = TextEditingController();
   final _totalController = TextEditingController();
 
@@ -42,21 +41,14 @@ class _TradeTabState extends State<TradeTab> {
         listen: false,
       ); // Ambil instance awal
 
-      _priceController.text = _tradeService.priceInputString.value;
       _amountController.text = _tradeService.amountInputString.value;
       _totalController.text = _tradeService.totalInputString.value;
 
-      _tradeService.priceInputString.addListener(_updatePriceController);
       _tradeService.amountInputString.addListener(_updateAmountController);
       _tradeService.totalInputString.addListener(_updateTotalController);
 
       // Listener untuk input pengguna ke controller UI, memanggil metode di service
-      _priceController.addListener(() {
-        if (_priceController.text != _tradeService.priceInputString.value) {
-          // Hindari loop jika update dari service
-          _tradeService.calculatePriceFromTotalAndAmount(_priceController.text);
-        }
-      });
+
       _amountController.addListener(() {
         if (_amountController.text != _tradeService.amountInputString.value) {
           _tradeService.calculateTotalFromAmount(_amountController.text);
@@ -76,12 +68,6 @@ class _TradeTabState extends State<TradeTab> {
     // _tradeService = Provider.of<TradeService>(context, listen: false);
   }
 
-  void _updatePriceController() {
-    if (_priceController.text != _tradeService.priceInputString.value) {
-      _priceController.text = _tradeService.priceInputString.value;
-    }
-  }
-
   void _updateAmountController() {
     if (_amountController.text != _tradeService.amountInputString.value) {
       _amountController.text = _tradeService.amountInputString.value;
@@ -97,11 +83,9 @@ class _TradeTabState extends State<TradeTab> {
   @override
   void dispose() {
     // Hapus listener dari service
-    _tradeService.priceInputString.removeListener(_updatePriceController);
     _tradeService.amountInputString.removeListener(_updateAmountController);
     _tradeService.totalInputString.removeListener(_updateTotalController);
 
-    _priceController.dispose();
     _amountController.dispose();
     _totalController.dispose();
     super.dispose();
@@ -130,7 +114,7 @@ class _TradeTabState extends State<TradeTab> {
 
   @override
   Widget build(BuildContext context) {
-    final tradeService = Provider.of<TradeService>(context); //
+    final tradeService = Provider.of<TradeService>(context);
 
     if (tradeService.isLoadingBalances) {
       return const Center(child: CircularProgressIndicator());
@@ -242,12 +226,21 @@ class _TradeTabState extends State<TradeTab> {
             ),
             const SizedBox(height: 20),
 
-            TradeInputGroup(
-              priceController: _priceController, // Controller tetap dikelola UI
-              amountController: _amountController,
-              totalController: _totalController,
-              selectedCryptoSymbol: tradeService.selectedCryptoSymbol,
-              isLoadingPrice: tradeService.isLoadingPrice,
+            ValueListenableBuilder<String>(
+              valueListenable:
+                  tradeService
+                      .priceInputString, // Mendengarkan ValueNotifier dari service
+              builder: (context, currentFormattedPrice, child) {
+                // 'currentFormattedPrice' adalah nilai terbaru dari tradeService.priceInputString
+                return TradeInputGroup(
+                  priceDisplay:
+                      currentFormattedPrice, // Mengirim string harga yang sudah siap tampil
+                  amountController: _amountController,
+                  totalController: _totalController,
+                  selectedCryptoSymbol: tradeService.selectedCryptoSymbol,
+                  isLoadingPrice: tradeService.isLoadingPrice,
+                );
+              },
             ),
             const SizedBox(height: 12),
             PercentageButtons(

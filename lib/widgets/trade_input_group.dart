@@ -1,19 +1,16 @@
-// lib/widgets/trade_input_group.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Jika Anda memutuskan untuk pass formatter
 
 class TradeInputGroup extends StatelessWidget {
-  final TextEditingController priceController;
+  final String priceDisplay; // Teks harga yang sudah diformat
   final TextEditingController amountController;
   final TextEditingController totalController;
   final String selectedCryptoSymbol;
   final bool isLoadingPrice;
-  // Anda bisa juga pass NumberFormat jika ingin format di dalam widget ini,
-  // tapi untuk sekarang kita asumsikan controller sudah diisi dengan string angka bersih.
+
 
   const TradeInputGroup({
     super.key,
-    required this.priceController,
+    required this.priceDisplay,
     required this.amountController,
     required this.totalController,
     required this.selectedCryptoSymbol,
@@ -24,26 +21,40 @@ class TradeInputGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextFormField(
-          controller: priceController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        InputDecorator(
           decoration: InputDecoration(
             labelText: "Harga per $selectedCryptoSymbol (IDR)",
-            prefixText: "Rp ",
             border: const OutlineInputBorder(),
-            suffixIcon:
-                isLoadingPrice
-                    ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Padding(
-                        padding: EdgeInsets.all(
-                          12.0,
-                        ), // Agar indicator lebih di tengah
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                    : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  priceDisplay, // Tampilkan string harga dari parameter
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w500 /* Sesuaikan style */,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isLoadingPrice)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Padding(
+                    padding: EdgeInsets.all(2.0), // Kurangi padding agar pas
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              else
+                Icon(
+                  Icons.sell_outlined, // Contoh ikon, bisa juga kosong
+                  color: Colors.grey[400],
+                  size: 20,
+                ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
