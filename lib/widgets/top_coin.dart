@@ -11,54 +11,53 @@ class TopCoin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    // Menghilangkan SizedBox dengan lebar tetap di sini
-    // Lebar akan diatur oleh parent (misalnya Expanded di dalam Row)
-    return Card(
-      elevation: 2.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0), // Padding bisa disesuaikan
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.network(
-              coin.imageUrl,
-              width: 32, // Ukuran gambar bisa disesuaikan
-              height: 32,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2.0),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.error, size: 32);
-              },
-            ),
-            const SizedBox(height: 8),
-            Text(
-              coin.shortName.toUpperCase(),
-              style: theme.textTheme.titleSmall?.copyWith(
-                // Mungkin titleSmall atau bodyLarge
-                fontWeight: FontWeight.bold,
+
+    return Container(
+      // Dekorasi untuk menggantikan Card, memberikan border tipis
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: Colors.grey.shade300, width: 1.0),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Grup Ikon dan Simbol Koin
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min, // Agar Row tidak mengambil semua lebar
+            children: [
+              Image.network(
+                coin.imageUrl,
+                width: 28,
+                height: 28,
+                errorBuilder: (context, error, stackTrace) {
+                  return const CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Colors.grey,
+                    child: Icon(Icons.error, color: Colors.white, size: 14),
+                  );
+                },
               ),
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              priceFormatter.format(coin.currentPrice),
-              style: theme.textTheme.bodySmall, // Mungkin bodySmall agar muat
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+              const SizedBox(width: 8),
+              Text(
+                coin.shortName.toUpperCase(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Harga Koin
+          Text(
+            priceFormatter.format(coin.currentPrice),
+            style: theme.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
