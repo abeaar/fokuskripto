@@ -78,11 +78,12 @@ class _LoginPageState extends State<LoginPage> {
         if (!mounted) return;
 
         var userWallet = await Hive.openBox('wallet_$inputUsername');
-        if(userWallet.isEmpty) {
+        if (userWallet.isEmpty) {
           await userWallet.put('IDR', {
             'name': 'Rupiah',
             'short_name': 'IDR',
-            'image_url': 'https://cdn-icons-png.flaticon.com/512/13893/13893854.png',
+            'image_url':
+                'https://cdn-icons-png.flaticon.com/512/13893/13893854.png',
             'amount': 100000,
             'price_in_idr': 1,
           });
@@ -125,11 +126,8 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 children: [
                   Text(
-                    "Silahkan Login",
-                    style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    "/; Kriptoin /",
+                    style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 24),
 
