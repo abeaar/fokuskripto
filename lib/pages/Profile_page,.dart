@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -30,15 +32,92 @@ class _ProfilePageState extends State<ProfilePage> {
   String _phoneNumber = "Belum diatur";
   String _kesanPesan = "Belum ada kesan dan pesan.";
   String? _profileImagePath;
-
+  String _locationMessage = "Sedang mencari lokasi...";
+  bool _isFetchingLocation = false;
   bool _isLoading = true;
-
   final ImagePicker _picker = ImagePicker(); //
-
   @override
   void initState() {
     super.initState();
     _loadProfileData();
+    _getCurrentLocationAndUpdateUI();
+  }
+
+  Future<void> _getCurrentLocationAndUpdateUI() async {
+    if (!mounted) return;
+    setState(() {
+      _isFetchingLocation = true;
+      _locationMessage = "Sedang mencari lokasi...";
+    });
+
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!mounted) return;
+      setState(() {
+        _locationMessage = 'Layanan lokasi tidak aktif.';
+        _isFetchingLocation = false;
+      });
+      return;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (!mounted) return;
+        setState(() {
+          _locationMessage = 'Izin lokasi ditolak.';
+          _isFetchingLocation = false;
+        });
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      if (!mounted) return;
+      setState(() {
+        _locationMessage =
+            'Izin lokasi ditolak permanen, buka pengaturan aplikasi.';
+        _isFetchingLocation = false;
+      });
+      return;
+    }
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium, // Akurasi bisa disesuaikan
+      );
+      if (!mounted) return;
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          String address =
+              "${place.street}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}, ${place.administrativeArea}, ${place.postalCode}, ${place.country}";
+          setState(() {
+            _locationMessage = address;
+          });
+        } else {
+          _locationMessage = "Alamat tidak ditemukan.";
+        }
+      } catch (e) {
+        print("Error geocoding: $e");
+        _locationMessage =
+            "Lat: ${position.latitude.toStringAsFixed(4)}, Lon: ${position.longitude.toStringAsFixed(4)} (Gagal geocode)";
+      }
+    } catch (e) {
+      print("Error mendapatkan lokasi: $e");
+      if (!mounted) return;
+      _locationMessage = "Gagal mendapatkan lokasi: ${e.toString()}";
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingLocation = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadProfileData() async {
@@ -178,16 +257,13 @@ class _ProfilePageState extends State<ProfilePage> {
             print(
               "Gambar profil lama di slot ${oldSlotKeySuffix == spProfilePicPathAKeySuffix ? 'A' : 'B'} dihapus: $oldImagePath",
             );
-            await prefs.remove(
-              '${_currentLoggedInUsername}_$oldSlotKeySuffix',
-            ); 
+            await prefs.remove('${_currentLoggedInUsername}_$oldSlotKeySuffix');
           }
         }
 
         if (!mounted) return;
         setState(() {
-          _profileImagePath =
-              newImageAbsPath; 
+          _profileImagePath = newImageAbsPath;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -283,8 +359,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildProfileInfoRow(
     String label,
     String value, {
-    VoidCallback? onEdit,
+    VoidCallback? onAction, // Menggunakan onAction
     IconData? actionIcon = Icons.edit_outlined,
+    Widget? valueWidget,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -310,25 +387,25 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
-          if (onEdit != null)
+          if (onAction != null)
             IconButton(
               icon: Icon(
                 actionIcon,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              onPressed: onEdit,
+              onPressed: onAction,
               iconSize: 20,
             )
-          else if (label == "Username") //
+          else if (label == "Username" && valueWidget == null)
             IconButton(
               icon: Icon(
                 Icons.copy_outlined,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              onPressed: () {
-                /* Logika copy username */
-              },
+              onPressed: () {},
               iconSize: 20,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
             ),
         ],
       ),
@@ -340,7 +417,6 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -436,7 +512,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildProfileInfoRow(
             "Full name",
             _fullName,
-            onEdit: () {
+            onAction: () {
               _showEditDialog(
                 fieldKeySuffix: spFullNameKeySuffix,
                 dialogTitle: "Nama Lengkap",
@@ -461,7 +537,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildProfileInfoRow(
             "Email Address",
             _email,
-            onEdit: () {
+            onAction: () {
               _showEditDialog(
                 fieldKeySuffix: spEmailKeySuffix,
                 dialogTitle: "Email Address",
@@ -477,7 +553,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildProfileInfoRow(
             "Phone Number",
             _phoneNumber,
-            onEdit: () {
+            onAction: () {
               _showEditDialog(
                 fieldKeySuffix: spPhoneNumberKeySuffix,
                 dialogTitle: "phone number",
@@ -491,6 +567,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               );
             },
+          ),
+          _buildProfileInfoRow(
+            "Lokasi Saat Ini", 
+            _isFetchingLocation
+                ? "Memuat lokasi..."
+                : _locationMessage, // Value yang ditampilkan
+            onAction:
+                _getCurrentLocationAndUpdateUI, // Aksi saat tombol ditekan
+            actionIcon: Icons.refresh, // Ikon refresh
           ),
           const SizedBox(height: 24),
           Text(
