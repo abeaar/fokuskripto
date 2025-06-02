@@ -93,9 +93,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   Text(
                     "Registrasi",
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
+                      color: Color.fromARGB(255, 115, 236, 139),
                     ),
                   ),
                   SizedBox(height: 22),
@@ -116,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     maxLength: 64,
                   ),
-                  SizedBox(height: 22),
+                  SizedBox(height: 18),
                   TextFormField(
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -143,7 +143,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     maxLength: 12,
                   ),
-                  SizedBox(height: 12),
+                  SizedBox(height: 18),
                   TextFormField(
                     controller: _confirmPassword,
                     obscureText: isObscureConfirmPassword,
@@ -176,14 +176,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     maxLength: 12,
                   ),
-                  SizedBox(height: 22),
+                  SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _register,
                       child: Text("Register", style: TextStyle(fontSize: 18)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
+                        backgroundColor: Color.fromARGB(255, 115, 236, 139),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

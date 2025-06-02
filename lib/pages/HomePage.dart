@@ -65,8 +65,8 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.w400),),
+        backgroundColor: Color.fromARGB(255, 115, 236, 139),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.person_2_outlined), // Ikon profil
