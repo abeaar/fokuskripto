@@ -95,7 +95,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 115, 236, 139),
                     ),
                   ),
                   SizedBox(height: 22),
@@ -183,8 +182,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       onPressed: _register,
                       child: Text("Register", style: TextStyle(fontSize: 18)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 115, 236, 139),
-                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

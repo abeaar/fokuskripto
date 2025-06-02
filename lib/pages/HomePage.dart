@@ -36,7 +36,6 @@ class _HomePageState extends State<HomePage> {
             (context) => Scaffold(
               appBar: AppBar(
                 title: const Text('Profil Saya'), // Judul untuk halaman profil
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 leading: IconButton(
                   // Tambahkan tombol back secara eksplisit jika perlu
                   icon: const Icon(Icons.arrow_back),
@@ -65,8 +64,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.w400),),
-        backgroundColor: Color.fromARGB(255, 115, 236, 139),
+        title: Text(title),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.person_2_outlined), // Ikon profil
@@ -107,7 +105,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
+        selectedItemColor: Color.fromARGB(255, 21, 179, 146),
         unselectedItemColor: const Color.fromARGB(255, 122, 118, 118),
         showUnselectedLabels:
             true, // Pastikan ini true agar label selalu tampil
