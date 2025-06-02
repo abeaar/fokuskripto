@@ -79,47 +79,20 @@ class _TradeTabState extends State<TradeTab> {
     try {
       final prefs = await SharedPreferences.getInstance();
       _username = prefs.getString(spUsernameKey) ?? 'Guest';
+      _userWalletBox = await Hive.openBox('wallet_$_username');
+      _tradableCoins = await _apiServiceGecko.fetchCoinMarkets(
+        vsCurrency: 'idr',
+        perPage: 50,
+      );
+      if (!mounted) return;
 
-      if (_username == 'Guest' || _username.isEmpty) {
-        if (!mounted) return;
-        _error = "Pengguna tidak teridentifikasi.";
-        print("TradeTab: Error - Pengguna tidak teridentifikasi.");
-      } else {
-        _userWalletBox = await Hive.openBox('wallet_$_username');
-        _tradableCoins = await _apiServiceGecko.fetchCoinMarkets(
-          vsCurrency: 'idr',
-          perPage: 50,
-        );
-        if (!mounted) return;
-
-        if (_tradableCoins.isNotEmpty) {
-          _setSelectedCoin(
-            _tradableCoins.first,
-          ); // Ini akan memanggil _fetchPriceAndBalances
-        } else {
-          _error = "Tidak ada koin yang bisa diambil dari API.";
-          print("TradeTab: Tidak ada koin yang bisa diambil dari API.");
-          // Set state default jika tidak ada koin
-          _selectedCryptoId = '';
-          _selectedCryptoSymbol = '';
-          _selectedCryptoMarketData = null;
-          _currentMarketPrice = 0.0;
-          _priceDisplayString = _priceFormatter.format(0.0);
-          _loadBalances(); // Tetap coba load saldo IDR
-        }
-      }
-    } catch (e) {
-      _error = "Gagal memuat data trade: ${e.toString()}";
-      print("TradeTab: Gagal melakukan inisialisasi data: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_error!)));
+      if (_tradableCoins.isNotEmpty) {
+        _setSelectedCoin(_tradableCoins.first);
       }
     } finally {
       if (mounted) {
         setState(() {
-          _isLoadingInitialData = false;
+          _isLoadingInitialData = false; // Pastikan loading awal berhenti
         });
         print(
           "TradeTab: _initializeTradeData selesai, _isLoadingInitialData = $_isLoadingInitialData",
@@ -142,36 +115,49 @@ class _TradeTabState extends State<TradeTab> {
 
   Future<void> _fetchPriceAndBalancesForSelectedCoin() async {
     if (!mounted) return;
+    // Pastikan _selectedCryptoId memiliki nilai yang valid sebelum fetch
     if (_selectedCryptoId.isEmpty) {
-      setState(() {
-        _priceDisplayString = _priceFormatter.format(0.0);
-        _currentMarketPrice = 0.0;
-        _isLoadingPrice = false;
-      });
-      _loadBalances();
+      print("TradeTab: Tidak ada koin dipilih, refresh harga diabaikan.");
+      // Anda bisa set _isLoadingPrice ke false di sini jika sebelumnya true
+      if (_isLoadingPrice) {
+        // Hanya panggil setState jika benar-benar perlu
+        setState(() {
+          _isLoadingPrice = false;
+        });
+      }
       return;
     }
 
     setState(() {
       _isLoadingPrice = true;
-    });
+    }); // Tampilkan indikator loading harga
+
     try {
+      print(
+        "TradeTab: Refreshing price for coin ID: $_selectedCryptoId",
+      ); // DEBUG
       final List<CoinGeckoMarketModel> specificCoinDataList =
           await _apiServiceGecko.fetchCoinMarkets(
             ids: _selectedCryptoId,
             vsCurrency: 'idr',
           );
+
       if (!mounted) return;
+
       if (specificCoinDataList.isNotEmpty) {
         _selectedCryptoMarketData = specificCoinDataList.first;
         _currentMarketPrice = _selectedCryptoMarketData!.currentPrice;
         setState(() {
           _priceDisplayString = _priceFormatter.format(_currentMarketPrice);
+          print("TradeTab: Harga baru diterima: $_priceDisplayString"); // DEBUG
         });
       } else {
         setState(() {
-          _priceDisplayString = "Rp 0";
+          _priceDisplayString = "Rp 0"; // Atau "Data tidak ditemukan"
           _currentMarketPrice = 0.0;
+          print(
+            "TradeTab: Data koin tidak ditemukan untuk ID: $_selectedCryptoId",
+          ); // DEBUG
         });
       }
     } catch (e) {
@@ -179,11 +165,13 @@ class _TradeTabState extends State<TradeTab> {
       setState(() {
         _priceDisplayString = "Error Harga";
         _currentMarketPrice = 0.0;
+        print("TradeTab: Error fetching specific coin price: $e"); // DEBUG
       });
-      print("TradeTab: Error fetching specific coin price: $e");
+      // Tampilkan SnackBar jika perlu
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal update harga: ${e.toString()}")));
     }
 
-    _loadBalances(); // Ini akan memanggil setState di dalamnya untuk saldo.
+    _loadBalances(); // Muat saldo juga (ini akan memanggil setState sendiri)
 
     if (!mounted) return;
     setState(() {
@@ -195,13 +183,11 @@ class _TradeTabState extends State<TradeTab> {
     if (!_userWalletBox.isOpen || !mounted) return;
     final idrAsset = _userWalletBox.get('IDR', defaultValue: {'amount': 0});
     final idrAmount = (idrAsset['amount'] as num?)?.toDouble() ?? 0.0;
-
     final cryptoAsset = _userWalletBox.get(
       _selectedCryptoSymbol.toUpperCase(),
       defaultValue: {'amount': 0.0},
     );
     final cryptoAmount = (cryptoAsset['amount'] as num?)?.toDouble() ?? 0.0;
-
     setState(() {
       _idrBalance = idrAmount;
       _cryptoBalance = cryptoAmount;
@@ -221,29 +207,21 @@ class _TradeTabState extends State<TradeTab> {
       );
       return;
     }
-
     double calculatedAmount = 0;
     double calculatedTotal = 0;
-
     if (_currentTradeMode == TradeMode.buy) {
       final double idrToSpend = _idrBalance * percentage;
       calculatedAmount = idrToSpend / price;
-      calculatedTotal = idrToSpend; // Total IDR yang akan dihabiskan
+      calculatedTotal = idrToSpend;
     } else {
       // Sell Mode
       final double cryptoToSell = _cryptoBalance * percentage;
       calculatedAmount = cryptoToSell;
       calculatedTotal = cryptoToSell * price;
     }
-
     setState(() {
-      _amountController.text = calculatedAmount.toStringAsFixed(
-        8,
-      ); // Kripto dengan presisi
-      _totalController.text =
-          calculatedTotal
-              .round()
-              .toString(); // Total IDR sebagai string angka bulat
+      _amountController.text = calculatedAmount.toStringAsFixed(8);
+      _totalController.text = calculatedTotal.round().toString();
     });
   }
 
@@ -387,29 +365,6 @@ class _TradeTabState extends State<TradeTab> {
     if (_isLoadingInitialData) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_error != null && _tradableCoins.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.red[700]),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _initializeTradeData,
-                child: const Text('Coba Muat Ulang'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: RefreshIndicator(
@@ -431,16 +386,6 @@ class _TradeTabState extends State<TradeTab> {
                   ),
                   itemBuilder:
                       (context, coin, isSelected) => ListTile(
-                        leading:
-                            coin.image.isNotEmpty
-                                ? Image.network(
-                                  coin.image,
-                                  width: 24,
-                                  height: 24,
-                                  errorBuilder:
-                                      (_, __, ___) => const Icon(Icons.error),
-                                )
-                                : const Icon(Icons.monetization_on_outlined),
                         title: Text(
                           "${coin.name} (${coin.symbol.toUpperCase()})",
                         ),
@@ -475,11 +420,8 @@ class _TradeTabState extends State<TradeTab> {
                           }
                         },
                 enabled: _tradableCoins.isNotEmpty,
-                // hint: Text("Pilih Koin"), // Komentari atau hapus jika selectedItem sudah diatur
               ),
               const SizedBox(height: 16),
-
-              // Di dalam Row untuk tombol BUY/SELL di TradeTab.dart
               Row(
                 children: [
                   Expanded(
@@ -507,10 +449,8 @@ class _TradeTabState extends State<TradeTab> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton(
-                      // --- PERBAIKAN DI SINI ---
                       onPressed:
                           () => setState(() {
-                            // Hapus kurung kurawal tambahan di dalam sini
                             _currentTradeMode = TradeMode.sell;
                             _amountController.clear();
                             _totalController.clear();
@@ -561,7 +501,6 @@ class _TradeTabState extends State<TradeTab> {
                   border: const OutlineInputBorder(),
                 ),
                 onChanged: (value) {
-                  // Panggil kalkulasi saat input jumlah berubah
                   if (value.isNotEmpty) {
                     double price = _currentMarketPrice;
                     double amount =
@@ -593,7 +532,6 @@ class _TradeTabState extends State<TradeTab> {
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
-                  // Panggil kalkulasi saat input total berubah
                   if (value.isNotEmpty) {
                     double price = _currentMarketPrice;
                     double total =

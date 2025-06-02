@@ -32,7 +32,6 @@ class _WithdrawPageState extends State<WithdrawPage> {
   }
 
   Future<void> _handleWithdraw() async {
-
     if (_formKey.currentState?.validate() ?? false) {
       final double withdrawAmount =
           double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
@@ -61,21 +60,19 @@ class _WithdrawPageState extends State<WithdrawPage> {
       if (newAmount.abs() < 0.01) {
         newAmount = 0.0;
       } else {
-        idrAsset['amount'] =
-            newAmount
-                .round(); // Simpan sebagai integer setelah pembulatan akhir
+        idrAsset['amount'] = newAmount.round();
       }
       if (newAmount != 0.0) {
-        idrAsset['amount'] =
-            newAmount
-                .round(); // Atau double.parse(newAmount.toStringAsFixed(0))
+        idrAsset['amount'] = newAmount.round();
       } else {
-        idrAsset['amount'] = 0; // Simpan sebagai integer 0
+        idrAsset['amount'] = 0;
       }
 
       widget.walletBox.put('IDR', idrAsset);
 
-      await NotificationService().showWithdrawalSuccessNotification(withdrawAmount);
+      await NotificationService().showWithdrawalSuccessNotification(
+        withdrawAmount,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -126,7 +123,6 @@ class _WithdrawPageState extends State<WithdrawPage> {
                   labelText: 'Jumlah Penarikan (IDR)',
                   border: const OutlineInputBorder(),
                   prefixText: 'IDR ',
-                  // --- TAMBAHKAN TOMBOL MAX DI SINI ---
                   suffixIcon: TextButton(
                     child: Text(
                       'MAX',
@@ -142,11 +138,9 @@ class _WithdrawPageState extends State<WithdrawPage> {
                       );
                       final double preciseMaxAmount =
                           (latestIdrAsset['amount'] as num?)?.toDouble() ?? 0.0;
-
                       _amountController.text = preciseMaxAmount.toStringAsFixed(
                         0,
-                      ); // Mengisi dengan angka bulat
-
+                      );
                       _amountController.selection = TextSelection.fromPosition(
                         TextPosition(offset: _amountController.text.length),
                       );
