@@ -115,12 +115,10 @@ class _TradeTabState extends State<TradeTab> {
 
   Future<void> _fetchPriceAndBalancesForSelectedCoin() async {
     if (!mounted) return;
-    // Pastikan _selectedCryptoId memiliki nilai yang valid sebelum fetch
+ 
     if (_selectedCryptoId.isEmpty) {
       print("TradeTab: Tidak ada koin dipilih, refresh harga diabaikan.");
-      // Anda bisa set _isLoadingPrice ke false di sini jika sebelumnya true
       if (_isLoadingPrice) {
-        // Hanya panggil setState jika benar-benar perlu
         setState(() {
           _isLoadingPrice = false;
         });
@@ -130,7 +128,7 @@ class _TradeTabState extends State<TradeTab> {
 
     setState(() {
       _isLoadingPrice = true;
-    }); // Tampilkan indikator loading harga
+    });
 
     try {
       print(
@@ -141,9 +139,7 @@ class _TradeTabState extends State<TradeTab> {
             ids: _selectedCryptoId,
             vsCurrency: 'idr',
           );
-
       if (!mounted) return;
-
       if (specificCoinDataList.isNotEmpty) {
         _selectedCryptoMarketData = specificCoinDataList.first;
         _currentMarketPrice = _selectedCryptoMarketData!.currentPrice;
@@ -167,8 +163,6 @@ class _TradeTabState extends State<TradeTab> {
         _currentMarketPrice = 0.0;
         print("TradeTab: Error fetching specific coin price: $e"); // DEBUG
       });
-      // Tampilkan SnackBar jika perlu
-      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal update harga: ${e.toString()}")));
     }
 
     _loadBalances(); // Muat saldo juga (ini akan memanggil setState sendiri)
