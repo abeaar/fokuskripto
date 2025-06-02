@@ -127,9 +127,8 @@ class _LoginPageState extends State<LoginPage> {
                   Text(
                     "Silahkan Login",
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
                     ),
                   ),
                   SizedBox(height: 24),
@@ -186,8 +185,6 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: _login,
                       child: Text("Login", style: TextStyle(fontSize: 18)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

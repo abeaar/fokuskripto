@@ -5,6 +5,7 @@ import '../services/api_gecko.dart';
 import '../services/base_network.dart'; // Untuk NetworkException
 import '../widgets/market_coin_item.dart';
 
+
 class MarketTab extends StatefulWidget {
   const MarketTab({super.key});
 
@@ -110,18 +111,13 @@ class _MarketTabState extends State<MarketTab> {
         ),
       );
     }
-
-    // Nanti di sini akan ada TabBar untuk "All Coin" dan "Favorite"
-    // Untuk sekarang, tampilkan semua koin dulu
     return RefreshIndicator(
       onRefresh: _fetchMarketData,
       child: Column(
-        // Kolom untuk header list (jika diperlukan) dan listnya
         children: [
-          // Header untuk daftar koin (sesuai desain Anda)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
+              horizontal: 33.0,
               vertical: 10.0,
             ),
             child: Row(
@@ -183,7 +179,6 @@ class _MarketTabState extends State<MarketTab> {
 
   @override
   Widget build(BuildContext context) {
-    // Tidak perlu Scaffold karena ini akan jadi body dari salah satu tab di HomePage
     return _buildMarketContent();
   }
 }
