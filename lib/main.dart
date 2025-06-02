@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
           titleTextStyle: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Color.fromARGB(255, 27, 102, 30),
           ),
 
           shape: RoundedRectangleBorder(
