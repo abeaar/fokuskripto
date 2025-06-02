@@ -7,7 +7,7 @@ class ApiServiceGecko {
   final BaseNetworkService _networkService = BaseNetworkService();
   static const String _apiBaseUrl = 'https://api.coingecko.com/api/v3';
   static const String _cacheBoxName = 'api_gecko_cache_ttl_simple';
-  static const int _cacheDurationMinutesTTL = 1;
+  static const int _cacheDurationMinutesTTL = 2;
 
   Future<Box> _getCacheBox() async {
     if (!Hive.isBoxOpen(_cacheBoxName)) {
@@ -23,9 +23,12 @@ class ApiServiceGecko {
     String? coinId,
     int perPage = 100,
     int page = 1,
+    int? days, // Pastikan ini ada
   }) {
     if (prefix.startsWith("detail_")) {
       return "${prefix}_${coinId}_$vsCurrency";
+    } else if (prefix.startsWith("chart_")) {
+      return "${prefix}_${coinId}_${vsCurrency}_${days ?? '1'}d";
     }
     return "${prefix}_${vsCurrency}_ids-${ids ?? "all"}_p-${page}_pp-$perPage";
   }
@@ -132,7 +135,6 @@ class ApiServiceGecko {
     }
   }
 
-  // --- METODE BARU UNTUK FETCH DETAIL KOIN ---
   Future<CoinGeckoDetailModel?> fetchCoinDetail(
     String coinId, {
     String vsCurrency = 'idr', // Untuk market_data di dalam detail
@@ -141,8 +143,6 @@ class ApiServiceGecko {
     final cacheBox = await _getCacheBox();
     final now = DateTime.now().millisecondsSinceEpoch;
 
-    // Kunci cache spesifik untuk detail koin ini
-    // Menggunakan prefix "detail_data" dan "detail_ts" untuk membedakan dari cache market list
     String dataKey = _generateCacheKey(
       "detail_data",
       coinId: coinId,
@@ -158,8 +158,7 @@ class ApiServiceGecko {
       final int? cachedTimestamp = cacheBox.get(timestampKey) as int?;
       if (cachedTimestamp != null) {
         final cacheAgeMinutes = (now - cachedTimestamp) / (1000 * 60);
-        // Gunakan TTL yang sama atau berbeda untuk detail, misalnya:
-        // const int detailCacheDurationMinutes = 10; // Detail mungkin lebih jarang berubah
+
         if (cacheAgeMinutes < _cacheDurationMinutesTTL) {
           // Atau detailCacheDurationMinutes
           final Map<String, dynamic>? cachedRawData =
@@ -223,6 +222,117 @@ class ApiServiceGecko {
       print("ApiServiceGecko: Error umum saat fetch detail untuk $coinId: $e");
       throw NetworkException(
         'Gagal memproses data detail dari CoinGecko untuk $coinId: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<List<List<double>>> fetchCoinMarketChart({
+    required String coinId,
+    String vsCurrency = 'idr',
+    int days = 1, // Default 1 hari (24 jam)
+    bool forceRefresh = false, // Parameter forceRefresh untuk chart
+  }) async {
+    final cacheBox = await _getCacheBox();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    String dataKey = _generateCacheKey(
+      "chart_data",
+      coinId: coinId,
+      vsCurrency: vsCurrency,
+      days: days,
+    );
+    String timestampKey = _generateCacheKey(
+      "chart_ts",
+      coinId: coinId,
+      vsCurrency: vsCurrency,
+      days: days,
+    );
+
+    if (!forceRefresh) {
+      final int? cachedTimestamp = cacheBox.get(timestampKey) as int?;
+      if (cachedTimestamp != null) {
+        final cacheAgeMinutes = (now - cachedTimestamp) / (1000 * 60);
+
+        if (cacheAgeMinutes < _cacheDurationMinutesTTL) {
+          final List<dynamic>? cachedRawData =
+              cacheBox.get(dataKey) as List<dynamic>?;
+          if (cachedRawData != null) {
+            print(
+              "CACHE TTL HIT (Coin Chart): Menggunakan data dari Hive untuk $dataKey.",
+            );
+            try {
+              // INI BARIS YANG PERLU DIUBAH UNTUK MENGATASI ERROR TIPE
+              return cachedRawData.map<List<double>>((item) {
+                return (item as List<dynamic>).map<double>((value) {
+                  return (value as num).toDouble();
+                }).toList();
+              }).toList();
+            } catch (e) {
+              print(
+                "CACHE CHART: Error parsing cached data untuk chart $coinId: $e. Akan fetch dari API.",
+              );
+              await cacheBox.delete(dataKey);
+              await cacheBox.delete(timestampKey);
+            }
+          }
+        } else {
+          print(
+            "CACHE STALE (Coin Chart): Data di Hive kadaluwarsa untuk $dataKey.",
+          );
+        }
+      } else {
+        print(
+          "CACHE EMPTY (Coin Chart): Timestamp (atau data) tidak ditemukan untuk $dataKey.",
+        );
+      }
+    } else {
+      print(
+        "API FETCH (Coin Chart): Force Refresh dari UI untuk chart $dataKey.",
+      );
+    }
+
+    print(
+      "API FETCH (Coin Chart): Mengambil data baru dari CoinGecko API untuk chart $dataKey.",
+    );
+    String endpoint =
+        '/coins/$coinId/market_chart?vs_currency=$vsCurrency&days=$days';
+
+    try {
+      final dynamic responseData = await _networkService.get(
+        '$_apiBaseUrl$endpoint',
+      );
+
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('prices')) {
+        List<dynamic> prices = responseData['prices'];
+
+        await cacheBox.put(dataKey, prices); // Simpan data mentah ke cache
+        await cacheBox.put(timestampKey, now);
+        print(
+          "API FETCH SUCCESS (Coin Chart): Data disimpan ke Hive untuk $dataKey.",
+        );
+
+        // Pastikan data yang dikembalikan juga sudah dalam format double yang benar
+        // Meskipun API mungkin sudah mengirim double, ini adalah praktik yang baik
+        return prices.map<List<double>>((item) {
+          return (item as List<dynamic>).map<double>((value) {
+            return (value as num).toDouble();
+          }).toList();
+        }).toList();
+      } else {
+        throw NetworkException(
+          'Format data API tidak valid (tidak ada "prices") untuk chart $coinId.',
+        );
+      }
+    } on NetworkException catch (e) {
+      print(
+        "ApiServiceGecko: NetworkException saat fetch chart untuk $coinId: $e",
+      );
+      rethrow;
+    } catch (e) {
+      print("ApiServiceGecko: Error umum saat fetch chart untuk $coinId: $e");
+      throw NetworkException(
+        'Gagal memproses data chart dari CoinGecko untuk $coinId: ${e.toString()}',
       );
     }
   }

@@ -111,9 +111,6 @@ class _MarketTabState extends State<MarketTab> {
         ),
       );
     }
-
-    // Nanti di sini akan ada TabBar untuk "All Coin" dan "Favorite"
-    // Untuk sekarang, tampilkan semua koin dulu
     return RefreshIndicator(
       onRefresh: _fetchMarketData,
       child: Column(
@@ -182,7 +179,6 @@ class _MarketTabState extends State<MarketTab> {
 
   @override
   Widget build(BuildContext context) {
-    // Tidak perlu Scaffold karena ini akan jadi body dari salah satu tab di HomePage
     return _buildMarketContent();
   }
 }
