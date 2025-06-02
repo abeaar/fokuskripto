@@ -569,7 +569,7 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           ),
           _buildProfileInfoRow(
-            "Lokasi Saat Ini", 
+            "Lokasi Saat Ini",
             _isFetchingLocation
                 ? "Memuat lokasi..."
                 : _locationMessage, // Value yang ditampilkan

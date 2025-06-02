@@ -115,7 +115,7 @@ class _TradeTabState extends State<TradeTab> {
 
   Future<void> _fetchPriceAndBalancesForSelectedCoin() async {
     if (!mounted) return;
- 
+
     if (_selectedCryptoId.isEmpty) {
       print("TradeTab: Tidak ada koin dipilih, refresh harga diabaikan.");
       if (_isLoadingPrice) {
