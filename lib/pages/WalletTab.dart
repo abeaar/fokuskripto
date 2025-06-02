@@ -171,7 +171,6 @@ class _WalletTabState extends State<WalletTab> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
