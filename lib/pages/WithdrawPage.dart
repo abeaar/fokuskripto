@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:fokuskripto/services/notification_service.dart';
 
 class WithdrawPage extends StatefulWidget {
   final Box walletBox;
@@ -30,7 +31,8 @@ class _WithdrawPageState extends State<WithdrawPage> {
     _currentIdrBalanceForMax = (idrAsset['amount'] as num?)?.toDouble() ?? 0.0;
   }
 
-  void _handleWithdraw() {
+  Future<void> _handleWithdraw() async {
+
     if (_formKey.currentState?.validate() ?? false) {
       final double withdrawAmount =
           double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
@@ -73,6 +75,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
 
       widget.walletBox.put('IDR', idrAsset);
 
+      await NotificationService().showWithdrawalSuccessNotification(withdrawAmount);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
