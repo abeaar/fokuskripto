@@ -60,7 +60,6 @@ class _WalletTabState extends State<WalletTab> {
     return ValueListenableBuilder(
       valueListenable: _userWalletBox.listenable(),
       builder: (context, Box box, _) {
-        // --- KALKULASI DILAKUKAN DI SINI ---
         double totalAssetValue = 0;
         for (var key in box.keys) {
           final asset = box.get(key);
@@ -73,9 +72,6 @@ class _WalletTabState extends State<WalletTab> {
           }
         }
 
-        const btcPriceInIdr = 1720499178; // Di aplikasi nyata, ini dari API
-        final assetInBtc = (totalAssetValue / btcPriceInIdr).toStringAsFixed(8);
-
         // UI utama sekarang di-build di dalam builder ini
         return Scaffold(
           backgroundColor: Colors.grey[50],
@@ -85,7 +81,7 @@ class _WalletTabState extends State<WalletTab> {
               children: [
                 const SizedBox(height: 8),
                 // Kirim data yang sudah dihitung sebagai parameter
-                _buildHeader(totalAssetValue, assetInBtc),
+                _buildHeader(totalAssetValue),
                 const SizedBox(height: 24),
                 _buildActionButtons(),
                 const SizedBox(height: 24),
@@ -119,8 +115,7 @@ class _WalletTabState extends State<WalletTab> {
     );
   }
 
-  // Ubah method agar menerima data sebagai parameter, bukan dari state
-  Widget _buildHeader(double totalAssetValue, String assetInBtc) {
+  Widget _buildHeader(double totalAssetValue) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -155,10 +150,6 @@ class _WalletTabState extends State<WalletTab> {
           ],
         ),
         const SizedBox(height: 2),
-        Text(
-          _isBalanceVisible ? '≈ $assetInBtc BTC' : '≈ ******** BTC',
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
-        ),
       ],
     );
   }

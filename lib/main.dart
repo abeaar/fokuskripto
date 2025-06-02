@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fokuskripto/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'package:path_provider/path_provider.dart' as path_provider;
+import 'model/coinGecko.dart';
 import 'pages/LoginPage.dart';
 import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
 
 // Asumsikan kode CryptoListPage di atas ada di file yang sama atau diimpor
-void main() async {
+Future <void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final appDocumentDir = await path_provider.getApplicationDocumentsDirectory();
+  await Hive.initFlutter(appDocumentDir.path);
+
+  Hive.registerAdapter(CoinGeckoMarketModelAdapter());
+
   await Hive.initFlutter();
   await NotificationService().init();
 
@@ -37,6 +45,7 @@ class MyApp extends StatelessWidget {
       },
 
       theme: ThemeData(primarySwatch: Colors.blue),
+      
     );
   }
 }

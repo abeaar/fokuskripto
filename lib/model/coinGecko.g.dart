@@ -71,4 +71,5 @@ class CoinGeckoMarketModelAdapter extends TypeAdapter<CoinGeckoMarketModel> {
       other is CoinGeckoMarketModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
+
 }

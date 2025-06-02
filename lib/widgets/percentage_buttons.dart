@@ -18,6 +18,9 @@ class PercentageButtons extends StatelessWidget {
                 backgroundColor: Colors.grey[200],
                 foregroundColor: Colors.black87,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                ), // Sedikit penyesuaian ukuran font
               ),
               child: Text("$percent%"),
             );
