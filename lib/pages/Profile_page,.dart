@@ -1,16 +1,9 @@
+import 'dart:io'; // Untuk File
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
-
-const String spUsernameKey =
-    'username'; // SUDAH KONSISTEN dengan LoginPage Anda
-const String spIsLoginKey =
-    'isLogin'; // Kunci untuk status login dari LoginPage Anda
-
-const String spFullNameKeySuffix = 'full_name';
-const String spEmailKeySuffix = 'email';
-const String spPhoneNumberKeySuffix = 'phone_number';
-const String spKesanPesanKeySuffix = 'kesan_pesan';
-const String spProfilePicPathKeySuffix = 'profile_pic_path';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -19,11 +12,19 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
+const String spUsernameKey = 'username';
+const String spIsLoginKey = 'isLogin';
+const String spFullNameKeySuffix = 'full_name';
+const String spEmailKeySuffix = 'email';
+const String spPhoneNumberKeySuffix = 'phone_number';
+const String spKesanPesanKeySuffix = 'kesan_pesan';
+const String spProfilePicPathAKeySuffix = 'profile_pic_path_a';
+const String spProfilePicPathBKeySuffix = 'profile_pic_path_b';
+const String spActiveProfilePicSlotKeySuffix = 'profile_pic_active_slot';
+
 class _ProfilePageState extends State<ProfilePage> {
-  String _currentLoggedInUsername =
-      ""; // Untuk menyimpan username yang sedang login
-  String _usernameDisplay =
-      "Pengguna"; // Untuk tampilan (bisa sama dengan _currentLoggedInUsername)
+  String _currentLoggedInUsername = "";
+  String _usernameDisplay = "Pengguna";
   String _fullName = "Belum diatur";
   String _email = "Belum diatur";
   String _phoneNumber = "Belum diatur";
@@ -31,6 +32,8 @@ class _ProfilePageState extends State<ProfilePage> {
   String? _profileImagePath;
 
   bool _isLoading = true;
+
+  final ImagePicker _picker = ImagePicker(); //
 
   @override
   void initState() {
@@ -45,14 +48,9 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     final prefs = await SharedPreferences.getInstance();
-    _currentLoggedInUsername =
-        prefs.getString(spUsernameKey) ??
-        ""; // Ambil username yang sedang login
-
+    _currentLoggedInUsername = prefs.getString(spUsernameKey) ?? "";
     if (_currentLoggedInUsername.isNotEmpty) {
-      _usernameDisplay =
-          _currentLoggedInUsername; // Tampilkan username yang login
-      // Muat data spesifik pengguna menggunakan username sebagai prefix
+      _usernameDisplay = _currentLoggedInUsername;
       _fullName =
           prefs.getString('${_currentLoggedInUsername}_$spFullNameKeySuffix') ??
           "Belum diatur";
@@ -69,16 +67,145 @@ class _ProfilePageState extends State<ProfilePage> {
             '${_currentLoggedInUsername}_$spKesanPesanKeySuffix',
           ) ??
           "Belum ada kesan dan pesan.";
-      _profileImagePath = prefs.getString(
-        '${_currentLoggedInUsername}_$spProfilePicPathKeySuffix',
+      String? activeSlot = prefs.getString(
+        '${_currentLoggedInUsername}_$spActiveProfilePicSlotKeySuffix',
       );
+      if (activeSlot == 'a') {
+        _profileImagePath = prefs.getString(
+          '${_currentLoggedInUsername}_$spProfilePicPathAKeySuffix',
+        );
+      } else if (activeSlot == 'b') {
+        _profileImagePath = prefs.getString(
+          '${_currentLoggedInUsername}_$spProfilePicPathBKeySuffix',
+        );
+      } else {
+        _profileImagePath = null;
+      }
     } else {
       _usernameDisplay = "Pengguna (Error)";
+      _profileImagePath = null;
     }
-
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Future<void> _pickAndSaveImage() async {
+    final XFile? pickedFile = await showModalBottomSheet<XFile?>(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Pilih dari Galeri'),
+                onTap: () async {
+                  Navigator.pop(
+                    context,
+                    await _picker.pickImage(source: ImageSource.gallery),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Ambil Foto dari Kamera'),
+                onTap: () async {
+                  Navigator.pop(
+                    context,
+                    await _picker.pickImage(source: ImageSource.camera),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (pickedFile != null && _currentLoggedInUsername.isNotEmpty) {
+      final File imageFileFromPicker = File(pickedFile.path);
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final prefs = await SharedPreferences.getInstance();
+
+      String? currentActiveSlot = prefs.getString(
+        '${_currentLoggedInUsername}_$spActiveProfilePicSlotKeySuffix',
+      );
+      String newSlotKeySuffix;
+      String oldSlotKeySuffix;
+      String newSlotIdentifier; // 'a' atau 'b'
+
+      if (currentActiveSlot == 'a') {
+        newSlotKeySuffix = spProfilePicPathBKeySuffix; // Simpan ke B
+        oldSlotKeySuffix = spProfilePicPathAKeySuffix;
+        newSlotIdentifier = 'b';
+      } else {
+        newSlotKeySuffix = spProfilePicPathAKeySuffix; // Simpan ke A
+        oldSlotKeySuffix = spProfilePicPathBKeySuffix;
+        newSlotIdentifier = 'a';
+      }
+
+      final String fileName =
+          'profile_pic_${_currentLoggedInUsername}_$newSlotIdentifier${path.extension(pickedFile.path)}';
+      final String newImageAbsPath = path.join(appDir.path, fileName);
+      final File newImageFileToSave = File(newImageAbsPath);
+
+      try {
+        if (await newImageFileToSave.exists()) {
+          await newImageFileToSave.delete();
+        }
+        await imageFileFromPicker.copy(newImageAbsPath);
+        print(
+          "Gambar profil baru disimpan ke: $newImageAbsPath (Slot $newSlotIdentifier)",
+        );
+        await prefs.setString(
+          '${_currentLoggedInUsername}_$newSlotKeySuffix',
+          newImageAbsPath,
+        );
+        await prefs.setString(
+          '${_currentLoggedInUsername}_$spActiveProfilePicSlotKeySuffix',
+          newSlotIdentifier,
+        );
+        String? oldImagePath = prefs.getString(
+          '${_currentLoggedInUsername}_$oldSlotKeySuffix',
+        );
+        if (oldImagePath != null &&
+            oldImagePath.isNotEmpty &&
+            oldImagePath != newImageAbsPath) {
+          final File oldImageFile = File(oldImagePath);
+          if (await oldImageFile.exists()) {
+            await oldImageFile.delete();
+            print(
+              "Gambar profil lama di slot ${oldSlotKeySuffix == spProfilePicPathAKeySuffix ? 'A' : 'B'} dihapus: $oldImagePath",
+            );
+            await prefs.remove(
+              '${_currentLoggedInUsername}_$oldSlotKeySuffix',
+            ); 
+          }
+        }
+
+        if (!mounted) return;
+        setState(() {
+          _profileImagePath =
+              newImageAbsPath; 
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil berhasil diperbarui!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        print("Error menyimpan/menyalin/menghapus gambar: $e");
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal menyimpan foto profil.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleLogout() async {
@@ -222,25 +349,79 @@ class _ProfilePageState extends State<ProfilePage> {
           Center(
             child: Column(
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[300],
-                  child:
-                      _profileImagePath != null && _profileImagePath!.isNotEmpty
-                          // ? ClipOval(child: Image.file(File(_profileImagePath!), fit: BoxFit.cover, width: 100, height: 100))
-                          ? const Icon(
-                            Icons.image,
-                            size: 60,
-                            color: Colors.grey,
-                          ) // Placeholder jika path ada tapi belum siap tampilkan
-                          : const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.grey,
+                InkWell(
+                  onTap: _pickAndSaveImage,
+                  child: CircleAvatar(
+                    radius: 100,
+                    backgroundColor: Colors.grey[300],
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 95,
+                          key: ValueKey<String?>(_profileImagePath),
+                          backgroundImage:
+                              _profileImagePath != null &&
+                                      File(_profileImagePath!).existsSync()
+                                  ? FileImage(File(_profileImagePath!))
+                                  : null,
+                          child:
+                              _profileImagePath == null ||
+                                      !File(_profileImagePath!).existsSync()
+                                  ? const Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: Colors.white70,
+                                  )
+                                  : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Padding(
+                              padding: EdgeInsets.all(6.0),
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Container(/* ... Verified Badge ... */),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        "Verified",
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -381,7 +562,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: _handleLogout,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 100),
         ],
       ),
     );

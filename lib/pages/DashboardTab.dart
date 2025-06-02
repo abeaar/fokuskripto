@@ -52,7 +52,6 @@ class _DashboardTabState extends State<DashboardTab> {
     }
   }
 
-  // Widget baru untuk membangun bagian ringkasan koin
   Widget _buildSummarySection() {
     if (_coins.isEmpty) {
       return const SizedBox.shrink(); // Tidak tampilkan apa-apa jika koin kosong
