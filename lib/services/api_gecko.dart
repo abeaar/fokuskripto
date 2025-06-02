@@ -7,7 +7,7 @@ class ApiServiceGecko {
   final BaseNetworkService _networkService = BaseNetworkService();
   static const String _apiBaseUrl = 'https://api.coingecko.com/api/v3';
   static const String _cacheBoxName = 'api_gecko_cache_ttl_simple';
-  static const int _cacheDurationMinutesTTL = 1;
+  static const int _cacheDurationMinutesTTL = 2;
 
   Future<Box> _getCacheBox() async {
     if (!Hive.isBoxOpen(_cacheBoxName)) {
