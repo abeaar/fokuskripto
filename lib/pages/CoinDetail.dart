@@ -143,7 +143,8 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
           Text(
             label,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[700],
+              color: const Color.fromARGB(255, 65, 65, 65),
+              fontSize: 12,
             ),
           ),
           const SizedBox(width: 16),
@@ -153,6 +154,7 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
               textAlign: TextAlign.end,
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w500,
+                fontSize: 12,
               ),
             ),
           ),
@@ -285,9 +287,9 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    // Judul AppBar dinamis berdasarkan data yang ada
     String appBarTitle = _coinDetail?.name ?? widget.coinName ?? widget.coinId;
     if (_coinDetail?.symbol != null) {
       appBarTitle =
@@ -296,10 +298,16 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
       appBarTitle =
           "${widget.coinName ?? widget.coinId} (${widget.coinSymbol!.toUpperCase()})";
     }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(appBarTitle),
-        backgroundColor: theme.colorScheme.inversePrimary,
+        backgroundColor: Colors.white,
+        titleTextStyle: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+          fontFamily: 'Roboto',
+        ),
       ),
       body:
           _isLoading
@@ -346,72 +354,97 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
                 child: ListView(
                   padding: const EdgeInsets.all(16.0),
                   children: [
-                    const SizedBox(height: 16),
-                    Text(
-                      _priceFormatter.format(_coinDetail!.currentPriceIdr),
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (_coinDetail!.priceChangePercentage24h != null)
-                      Text(
-                        "${_coinDetail!.priceChangePercentage24h! >= 0 ? '+' : ''}${_percentageFormatter.format(_coinDetail!.priceChangePercentage24h)}%",
-                        style: TextStyle(
-                          color:
-                              (_coinDetail!.priceChangePercentage24h! >= 0)
-                                  ? Colors.green[700]
-                                  : Colors.red[700],
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                              ),
+                              const SizedBox(height: 0),
+                              Text(
+                                _priceFormatter
+                                    .format(_coinDetail!.currentPriceIdr)
+                                    .replaceAll('Rp ', ''),
+                                style: theme.textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 33,
+                                ),
+                              ),
+                              if (_coinDetail!.priceChangePercentage24h != null)
+                                Text(
+                                  "${_coinDetail!.priceChangePercentage24h! >= 0 ? '+' : ''}${_percentageFormatter.format(_coinDetail!.priceChangePercentage24h)}%",
+                                  style: TextStyle(
+                                    color:
+                                        (_coinDetail!
+                                                    .priceChangePercentage24h! >=
+                                                0)
+                                            ? Colors.green[700]
+                                            : Colors.red[700],
+                                    fontSize: 23, // Ukuran
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(
+                          width: 16,
+                        ), // Jarak antara kolom kiri dan kanan
+                        Expanded(
+                          flex: 2, // Beri ruang yang cukup untuk statistik
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 2), // Jarak kecil
+                              _buildInfoRow(
+                                context,
+                                "High",
+                                _coinDetail!.high24hIdr != null
+                                    ? _priceFormatter
+                                        .format(_coinDetail!.high24hIdr!)
+                                        .replaceAll('Rp ', '')
+                                    : "-",
+                              ),
+                              _buildInfoRow(
+                                context,
+                                "Low",
+                                _coinDetail!.low24hIdr != null
+                                    ? _priceFormatter
+                                        .format(_coinDetail!.low24hIdr!)
+                                        .replaceAll('Rp ', '')
+                                    : "-",
+                              ),
+                              _buildInfoRow(
+                                context,
+                                "Vol (IDR)",
+                                _coinDetail!.totalVolumeIdr != null
+                                    ? " ${_volumeFormatter.format(_coinDetail!.totalVolumeIdr!)}"
+                                    : "-",
+                              ),
+                              _buildInfoRow(
+                                context,
+                                "Vol (${_coinDetail!.symbol.toUpperCase()})",
+                                _coinDetail!.totalVolumeBtc != null
+                                    ? "${_coinVolumeFormatter.format(_coinDetail!.totalVolumeBtc!)} ${_coinDetail!.symbol.toUpperCase()}"
+                                    : "-",
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // --- AKHIR BAGIAN BARU ---
                     const SizedBox(height: 16), // Jarak sebelum grafik
-                    // --- MEMANGGIL FUNGSI GRAFIK DI SINI ---
-                    _buildChart(context),
+                    _buildChart(context), // Memanggil fungsi grafik Anda
+                    const SizedBox(height: 24),
 
-                    // --- AKHIR PEMANGGILAN GRAFIK ---
-                    const SizedBox(height: 24), // Jarak setelah grafik
-                    // Market Stats Section
-                    Text(
-                      "Statistik Pasar (24 Jam)",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Divider(),
-                    _buildInfoRow(
-                      context, // Jika _buildInfoRow Anda masih memerlukan context
-                      "Tertinggi",
-                      _coinDetail!.high24hIdr != null
-                          ? _priceFormatter.format(_coinDetail!.high24hIdr!)
-                          : "-",
-                    ),
-                    _buildInfoRow(
-                      context,
-                      "Terendah",
-                      _coinDetail!.low24hIdr != null
-                          ? _priceFormatter.format(_coinDetail!.low24hIdr!)
-                          : "-",
-                    ),
-                    _buildInfoRow(
-                      context,
-                      "Volume (IDR)",
-                      _coinDetail!.totalVolumeIdr != null
-                          ? "Rp ${_volumeFormatter.format(_coinDetail!.totalVolumeIdr!)}"
-                          : "-",
-                    ),
-                    _buildInfoRow(
-                      context,
-                      "Volume (${_coinDetail!.symbol.toUpperCase()})",
-                      _coinDetail!.totalVolumeBtc != null
-                          ? "${_coinVolumeFormatter.format(_coinDetail!.totalVolumeBtc!)} ${_coinDetail!.symbol.toUpperCase()}"
-                          : "-",
-                    ),
-
-                    _buildDescription(
-                      context, // Jika _buildDescription Anda masih memerlukan context
-                      _coinDetail!.descriptionEn,
-                    ),
+                    _buildDescription(context, _coinDetail!.descriptionEn),
 
                     if (_coinDetail!.homepageUrl != null &&
                         _coinDetail!.homepageUrl!.isNotEmpty) ...[
