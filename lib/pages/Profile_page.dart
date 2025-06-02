@@ -7,6 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
+import '../widgets/profile_info_header.dart';
+import '../widgets/profile_info_card.dart';
+import '../widgets/kesan_pesan_section.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -21,8 +25,8 @@ const String spEmailKeySuffix = 'email';
 const String spPhoneNumberKeySuffix = 'phone_number';
 const String spKesanPesanKeySuffix = 'kesan_pesan';
 const String spProfilePicPathAKeySuffix = 'profile_pic_path_a';
-const String spProfilePicPathBKeySuffix = 'profile_pic_path_b';
 const String spActiveProfilePicSlotKeySuffix = 'profile_pic_active_slot';
+const String spProfilePicPathBKeySuffix = 'profile_pic_path_b';
 
 class _ProfilePageState extends State<ProfilePage> {
   String _currentLoggedInUsername = "";
@@ -39,7 +43,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadProfileData();
+    _loadAllProfileData();
     _getCurrentLocationAndUpdateUI();
   }
 
@@ -120,14 +124,18 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _loadProfileData() async {
-    if (!mounted) return;
+  Future<void> _loadAllProfileData() async {
     setState(() {
-      _isLoading = true;
+      _isLoading = false;
     });
+    await _loadProfileDataFromPrefs();
+    await _getCurrentLocationAndUpdateUI();
+  }
 
+  Future<void> _loadProfileDataFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     _currentLoggedInUsername = prefs.getString(spUsernameKey) ?? "";
+
     if (_currentLoggedInUsername.isNotEmpty) {
       _usernameDisplay = _currentLoggedInUsername;
       _fullName =
@@ -146,6 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
             '${_currentLoggedInUsername}_$spKesanPesanKeySuffix',
           ) ??
           "Belum ada kesan dan pesan.";
+
       String? activeSlot = prefs.getString(
         '${_currentLoggedInUsername}_$spActiveProfilePicSlotKeySuffix',
       );
@@ -163,10 +172,13 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       _usernameDisplay = "Pengguna (Error)";
       _profileImagePath = null;
+      // Set semua field ke default jika tidak ada user
+      _fullName = "Belum diatur";
+      _email = "Belum diatur";
+      _phoneNumber = "Belum diatur";
+      _kesanPesan = "Belum ada kesan dan pesan.";
     }
-    setState(() {
-      _isLoading = false;
-    });
+    // setState akan dipanggil oleh _loadAllProfileData
   }
 
   Future<void> _pickAndSaveImage() async {
