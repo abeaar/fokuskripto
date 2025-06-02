@@ -51,7 +51,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Tambahkan AppBar di sini jika ingin judul berbeda untuk setiap tab
     String title = 'Crypto App';
     if (_selectedIndex == 0) {
       title = 'Dashboard';

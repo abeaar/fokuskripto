@@ -23,6 +23,7 @@ dependencies:
   path_provider: ^2.1.3
   geolocator: ^14.0.1 
   geocoding: ^4.0.0  
+  fl_chart: 1.0.0
 
 dev_dependencies:
   flutter_test:
