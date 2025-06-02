@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../services/base_network.dart';
 
 // Sesuaikan path import model dan service Anda
 import '../model/coinGecko_detail.dart';
@@ -26,28 +27,10 @@ class CoinDetailPage extends StatefulWidget {
 }
 
 class _CoinDetailPageState extends State<CoinDetailPage> {
-  // Jika ApiServiceGecko di-provide di atas MaterialApp atau HomePage:
-  // late ApiServiceGecko _apiService;
-  // Jika tidak, buat instance baru:
-
-  final List<double> _dummyChartPrices = [
-    16250,
-    16260,
-    16275,
-    16290,
-    16285,
-    16270,
-    16280,
-    16295,
-    16300,
-    16290,
-    16310,
-    16305,
-  ];
-
   final ApiServiceGecko _apiService = ApiServiceGecko();
 
   CoinGeckoDetailModel? _coinDetail;
+  List<FlSpot> _chartSpots = [];
   bool _isLoading = true;
   String? _error;
 
@@ -74,31 +57,66 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
   @override
   void initState() {
     super.initState();
-    // Jika menggunakan Provider:
-    // _apiService = Provider.of<ApiServiceGecko>(context, listen: false);
-    _fetchDetail(force: false); // Ambil dari cache dulu jika ada
+    _fetchPageData(force: false);
   }
 
-  Future<void> _fetchDetail({bool force = false}) async {
+  Future<void> _fetchPageData({bool force = false}) async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
       _error = null;
+      _chartSpots = []; // Bersihkan chart data saat memulai fetch
     });
     try {
       print(
-        "CoinDetailPage: Fetching detail for ${widget.coinId}, force: $force",
+        "CoinDetailPage: Fetching ALL data for ${widget.coinId}, force: $force",
       );
+
+      // Fetch Detail Data
       _coinDetail = await _apiService.fetchCoinDetail(
         widget.coinId,
-        forceRefreshUiTrigger: force,
+        forceRefreshUiTrigger: force, // Meneruskan 'force' ke service detail
       );
+
+      // Fetch Chart Data (untuk 1 hari terakhir)
+      final chartRawData = await _apiService.fetchCoinMarketChart(
+        coinId: widget.coinId,
+        vsCurrency: 'idr', // Pastikan mata uang sesuai
+        days:
+            1, // Periode waktu yang Anda inginkan (1 = 24 jam, 7 = 7 hari, dst.)
+        forceRefresh: force, // Meneruskan 'force' ke service chart
+      );
+
+      if (chartRawData.isNotEmpty) {
+        // Konversi data historis [timestamp, harga] menjadi FlSpot [index, harga]
+        // Kita gunakan index sebagai nilai X untuk FlSpot agar urutan benar pada grafik
+        _chartSpots =
+            chartRawData.asMap().entries.map((entry) {
+              // entry.key adalah index (0, 1, 2, ...)
+              // entry.value adalah List<double> yaitu [timestamp, price]
+              return FlSpot(
+                entry.key.toDouble(),
+                entry.value[1],
+              ); // Gunakan index sebagai X, harga sebagai Y
+            }).toList();
+
+        // Penting: Sort by X value untuk memastikan urutan titik yang benar pada grafik
+        _chartSpots.sort((a, b) => a.x.compareTo(b.x));
+      }
+
       if (_coinDetail == null && mounted) {
         _error = "Data koin tidak ditemukan.";
       }
     } catch (e) {
-      if (mounted) _error = e.toString();
-      print("CoinDetailPage: Error fetching coin detail: $_error");
+      if (mounted) {
+        // Tangkap NetworkException secara spesifik atau error umum lainnya
+        if (e is NetworkException) {
+          _error = e.message;
+        } else {
+          _error = 'Terjadi kesalahan: ${e.toString()}';
+        }
+      }
+      print("CoinDetailPage: Error fetching page data: $_error");
     }
     if (mounted) {
       setState(() {
@@ -108,7 +126,6 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
   }
 
   void _handleBuyButtonPressed() {
-    // TODO: Implementasi navigasi ke TradeTab dengan info koin ini untuk BUY
     print("Tombol BUY ditekan untuk: ${widget.coinSymbol ?? widget.coinId}");
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -120,7 +137,6 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
   }
 
   void _handleSellButtonPressed() {
-    // TODO: Implementasi navigasi ke TradeTab dengan info koin ini untuk SELL
     print("Tombol SELL ditekan untuk: ${widget.coinSymbol ?? widget.coinId}");
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -167,16 +183,13 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
     if (descriptionHtml == null || descriptionHtml.isEmpty) {
       return const SizedBox.shrink();
     }
-    // Untuk MVP, kita tampilkan sebagai teks biasa. Hati-hati jika ada tag HTML.
-    // Untuk parsing HTML yang lebih baik, gunakan paket seperti flutter_html_to_widget atau flutter_widget_from_html_core.
     String plainTextDescription =
         descriptionHtml
-            .replaceAll(RegExp(r'<[^>]*>'), ' ') // Hapus tag HTML sederhana
-            .replaceAll(RegExp(r'\s+'), ' ') // Ganti spasi ganda dengan tunggal
+            .replaceAll(RegExp(r'<[^>]*>'), ' ')
+            .replaceAll(RegExp(r'\s+'), ' ')
             .trim();
 
-    // Ambil beberapa kalimat pertama atau batasi panjangnya untuk MVP
-    int maxLength = 300; // Batas karakter
+    int maxLength = 300;
     if (plainTextDescription.length > maxLength) {
       plainTextDescription =
           "${plainTextDescription.substring(0, maxLength)}...";
@@ -205,63 +218,62 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
   }
 
   Widget _buildChart(BuildContext context) {
-    // Ubah _dummyChartPrices menjadi List<FlSpot>
-    List<FlSpot> chartSpots = [];
-    for (int i = 0; i < _dummyChartPrices.length; i++) {
-      chartSpots.add(FlSpot(i.toDouble(), _dummyChartPrices[i]));
+    if (_chartSpots.isEmpty) {
+      return const SizedBox(
+        height: 200,
+        child: Center(child: Text("Data grafik tidak tersedia.")),
+      );
     }
 
-    // Tentukan nilai min dan max Y untuk sumbu vertikal
-    double minY =
-        _dummyChartPrices.reduce((a, b) => a < b ? a : b) -
-        20; // Beri sedikit ruang di bawah
-    double maxY =
-        _dummyChartPrices.reduce((a, b) => a > b ? a : b) +
-        20; // Beri sedikit ruang di atas
+    // Tentukan nilai min dan max Y dari data chart asli
+    double minY = _chartSpots
+        .map((spot) => spot.y)
+        .reduce((a, b) => a < b ? a : b);
+    double maxY = _chartSpots
+        .map((spot) => spot.y)
+        .reduce((a, b) => a > b ? a : b);
+    double minX = _chartSpots.first.x;
+    double maxX = _chartSpots.last.x;
+    minY = minY * 0.99; // Mengurangi 1% dari nilai minimum
+    maxY = maxY * 1.01; // Menambah 1% dari nilai maksimum
+    print("Chart: MinY: $minY, MaxY: $maxY, MinX: $minX, MaxX: $maxX");
 
     return SizedBox(
       height: 200, // Atur tinggi grafik sesuai keinginan Anda
       child: Padding(
-        padding: const EdgeInsets.only(
-          top: 16.0,
-          bottom: 8.0,
-          right: 16.0,
-        ), // Tambahkan padding
+        padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, right: 16.0),
         child: LineChart(
           LineChartData(
-            gridData: const FlGridData(show: false), // Sembunyikan garis grid
-            titlesData: const FlTitlesData(
-              show: false,
-            ), // Sembunyikan label sumbu (X dan Y)
+            gridData: const FlGridData(show: false),
+            titlesData: const FlTitlesData(show: false),
             borderData: FlBorderData(
-              show: true, // Tampilkan border
+              show: true,
               border: Border.all(color: Colors.grey.shade300, width: 1),
             ),
-            minX: 0, // Sumbu X mulai dari 0
+            minX:
+                _chartSpots
+                    .first
+                    .x, // Sumbu X mulai dari titik pertama data asli
             maxX:
-                chartSpots.isNotEmpty
-                    ? chartSpots.length.toDouble() - 1
-                    : 1, // Sumbu X berakhir di index terakhir
+                _chartSpots
+                    .last
+                    .x, // Sumbu X berakhir di titik terakhir data asli
             minY: minY,
             maxY: maxY,
             lineBarsData: [
               LineChartBarData(
-                spots: chartSpots, // Data titik grafik
-                isCurved: true, // Membuat garis melengkung
+                spots: _chartSpots, // Gunakan data chart asli di sini
+                isCurved: true,
                 gradient: LinearGradient(
-                  // Memberi warna gradasi pada garis
                   colors: [
                     Theme.of(context).colorScheme.primary,
                     Theme.of(context).colorScheme.primary.withOpacity(0.3),
                   ],
                 ),
-                barWidth: 3, // Ketebalan garis
+                barWidth: 3,
                 isStrokeCapRound: true,
-                dotData: const FlDotData(
-                  show: false,
-                ), // Sembunyikan titik pada data
+                dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
-                  // Area di bawah garis
                   show: true,
                   gradient: LinearGradient(
                     colors: [
@@ -274,12 +286,6 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
                 ),
               ),
             ],
-            // Tambahkan konfigurasi untuk sentuhan/tooltip jika diinginkan nanti
-            // lineTouchData: LineTouchData(
-            //   touchTooltipData: LineTouchTooltipData(
-            //     tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-            //   ),
-            // ),
           ),
         ),
       ),
@@ -328,7 +334,8 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
                       ElevatedButton.icon(
                         icon: const Icon(Icons.refresh),
                         label: const Text("Coba Lagi"),
-                        onPressed: () => _fetchDetail(force: true),
+                        // Panggil dengan force: false agar memeriksa cache saat 'Coba Lagi'
+                        onPressed: () => _fetchPageData(force: false),
                       ),
                     ],
                   ),
@@ -344,13 +351,16 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
                     ElevatedButton.icon(
                       icon: const Icon(Icons.refresh),
                       label: const Text("Coba Lagi"),
-                      onPressed: () => _fetchDetail(force: true),
+                      // Panggil dengan force: false agar memeriksa cache saat 'Coba Lagi'
+                      onPressed: () => _fetchPageData(force: false),
                     ),
                   ],
                 ),
               )
               : RefreshIndicator(
-                onRefresh: () => _fetchDetail(force: true),
+                // PENTING: Mengubah force: true menjadi force: false di sini
+                // Agar pull-to-refresh juga memeriksa cache terlebih dahulu.
+                onRefresh: () => _fetchPageData(force: false),
                 child: ListView(
                   padding: const EdgeInsets.all(16.0),
                   children: [
@@ -439,7 +449,6 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
                       ],
                     ),
 
-                    // --- AKHIR BAGIAN BARU ---
                     const SizedBox(height: 16), // Jarak sebelum grafik
                     _buildChart(context), // Memanggil fungsi grafik Anda
                     const SizedBox(height: 24),
