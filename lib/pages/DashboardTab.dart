@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/api/coin_gecko_api.dart';
+import '../services/api/crypto_news_api.dart';
 import '../services/api/api_exception.dart';
 import '../model/coinGecko.dart';
+import '../model/crypto_news.dart';
 import '../widgets/dashboardtab/coin_list_item.dart';
 import '../widgets/dashboardtab/top_coin.dart';
+import '../widgets/dashboardtab/news_card.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
@@ -15,11 +18,13 @@ class DashboardTab extends StatefulWidget {
 
 class _DashboardTabState extends State<DashboardTab> {
   final CoinGeckoApi _api = CoinGeckoApi();
+  final CryptoNewsApi _newsApi = CryptoNewsApi();
 
   bool _isLoading = true;
   String? _error;
   List<CoinGeckoMarketModel> _topCoins = [];
   List<CoinGeckoMarketModel> _trendingCoins = [];
+  List<CryptoNews> _news = [];
 
   final NumberFormat _priceFormatter = NumberFormat.currency(
     locale: 'id_ID',
@@ -30,10 +35,10 @@ class _DashboardTabState extends State<DashboardTab> {
   @override
   void initState() {
     super.initState();
-    _fetchCoins();
+    _fetchData();
   }
 
-  Future<void> _fetchCoins() async {
+  Future<void> _fetchData() async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -41,18 +46,26 @@ class _DashboardTabState extends State<DashboardTab> {
     });
 
     try {
-      // Fetch top 8 coins by market cap
-      final fetchedCoins = await _api.getMarkets(
-        vsCurrency: 'idr',
-        perPage: 8, // Fetch 8 coins total
-        page: 1,
-      );
+      final results = await Future.wait([
+        _api.getMarkets(
+          vsCurrency: 'idr',
+          perPage: 8,
+          page: 1,
+        ),
+        // _newsApi.getLatestNews(limit: 5), // Temporarily disabled
+      ]);
 
       if (!mounted) return;
       setState(() {
-        // Split the coins into top 3 and trending 5
+        // Handle coins data
+        final List<CoinGeckoMarketModel> fetchedCoins =
+            results[0] as List<CoinGeckoMarketModel>;
         _topCoins = fetchedCoins.take(3).toList();
         _trendingCoins = fetchedCoins.skip(3).take(5).toList();
+
+        // Handle news data
+        // _news = results[1] as List<CryptoNews>; // Temporarily disabled
+
         _isLoading = false;
       });
     } on ApiException catch (e) {
@@ -128,6 +141,26 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
+  Widget _buildNewsSection() {
+    if (_news.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+          child: Text(
+            "Latest News",
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ),
+        ..._news.map((news) => NewsCard(news: news)),
+      ],
+    );
+  }
+
   Widget _buildContent() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -141,7 +174,7 @@ class _DashboardTabState extends State<DashboardTab> {
             Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _fetchCoins,
+              onPressed: _fetchData,
               child: const Text('Coba Lagi'),
             ),
           ],
@@ -150,11 +183,12 @@ class _DashboardTabState extends State<DashboardTab> {
     }
 
     return RefreshIndicator(
-      onRefresh: _fetchCoins,
+      onRefresh: _fetchData,
       child: ListView(
         children: [
           _buildSummarySection(),
           _buildTrendingSection(),
+          // _buildNewsSection(),
         ],
       ),
     );
