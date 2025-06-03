@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../model/coin.dart';
-import '../widgets/coin_list_item.dart';
-import '../services/api_service.dart';
-import '../widgets/top_coin.dart';
+import '../services/api/coin_gecko_api.dart';
+import '../services/api/api_exception.dart';
+import '../model/coinGecko.dart';
+import '../widgets/dashboardtab/coin_list_item.dart';
+import '../widgets/dashboardtab/top_coin.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
@@ -13,11 +14,13 @@ class DashboardTab extends StatefulWidget {
 }
 
 class _DashboardTabState extends State<DashboardTab> {
-  final ApiService _apiService = ApiService();
+  final CoinGeckoApi _api = CoinGeckoApi();
 
   bool _isLoading = true;
   String? _error;
-  List<Coin> _coins = [];
+  List<CoinGeckoMarketModel> _topCoins = [];
+  List<CoinGeckoMarketModel> _trendingCoins = [];
+
   final NumberFormat _priceFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -36,11 +39,26 @@ class _DashboardTabState extends State<DashboardTab> {
       _isLoading = true;
       _error = null;
     });
+
     try {
-      final fetchedCoins = await _apiService.fetchCoins();
+      // Fetch top 8 coins by market cap
+      final fetchedCoins = await _api.getMarkets(
+        vsCurrency: 'idr',
+        perPage: 8, // Fetch 8 coins total
+        page: 1,
+      );
+
       if (!mounted) return;
       setState(() {
-        _coins = fetchedCoins;
+        // Split the coins into top 3 and trending 5
+        _topCoins = fetchedCoins.take(3).toList();
+        _trendingCoins = fetchedCoins.skip(3).take(5).toList();
+        _isLoading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Gagal memuat data: ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
@@ -53,11 +71,7 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   Widget _buildSummarySection() {
-    if (_coins.isEmpty) {
-      return const SizedBox.shrink(); // Tidak tampilkan apa-apa jika koin kosong
-    }
-    final topCoin = _coins.take(3).toList();
-    if (topCoin.isEmpty) {
+    if (_topCoins.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -68,35 +82,48 @@ class _DashboardTabState extends State<DashboardTab> {
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
           child: Text(
             "Top Coin",
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12.0,
-          ), // Padding untuk Row
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
-            children: <Widget>[
-              // Eksplisit membuat List<Widget>
-              ...topCoin.map((coin) {
-                // Spread hasil map
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: TopCoin(coin: coin, priceFormatter: _priceFormatter),
+            children: _topCoins.map((coin) {
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: TopCoin(
+                    coin: coin,
+                    priceFormatter: _priceFormatter,
                   ),
-                );
-              }).toList(),
-              ...List.generate(
-                3 - topCoin.length,
-                (index) => Expanded(child: Container()),
-                growable: false,
-              ),
-            ],
+                ),
+              );
+            }).toList(),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildTrendingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+          child: Text(
+            "Trending",
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ),
+        ..._trendingCoins.map((coin) => CoinListItem(
+              coin: coin,
+              priceFormatter: _priceFormatter,
+            )),
       ],
     );
   }
@@ -105,31 +132,30 @@ class _DashboardTabState extends State<DashboardTab> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchCoins,
+              child: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _fetchCoins,
-      child: ListView.builder(
-        itemCount: 1 + 1 + _coins.length, // Summary + Judul List + Item List
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildSummarySection();
-          }
-          if (index == 1) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-              child: Text(
-                "Trending",
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            );
-          }
-          final coinIndex = index - 2;
-          return CoinListItem(
-            coin: _coins[coinIndex],
-            priceFormatter: _priceFormatter,
-          );
-        },
+      child: ListView(
+        children: [
+          _buildSummarySection(),
+          _buildTrendingSection(),
+        ],
       ),
     );
   }

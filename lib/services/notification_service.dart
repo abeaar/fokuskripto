@@ -17,7 +17,7 @@ class NotificationService {
   Future<void> init() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings(
-            'kriptoin'); // ganti dengan nama file ikon Anda
+            'kriptoin'); 
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings();

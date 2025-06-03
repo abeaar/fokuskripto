@@ -17,12 +17,42 @@ class WalletTab extends StatefulWidget {
 
 List<CoinGeckoMarketModel> _marketCoins = [];
 
+class WalletSummary {
+  final double staticValue;
+  final double marketValue;
+  final double returnValue;
+  final double returnPercentage;
+
+  WalletSummary({
+    required this.staticValue,
+    required this.marketValue,
+    required this.returnValue,
+    required this.returnPercentage,
+  });
+
+  // Factory method untuk menghitung summary
+  factory WalletSummary.calculate(
+      double staticValue, double currentMarketValue) {
+    final returnValue = currentMarketValue - staticValue;
+    final returnPercentage =
+        staticValue != 0 ? (returnValue / staticValue) * 100 : 0.0;
+
+    return WalletSummary(
+      staticValue: staticValue,
+      marketValue: currentMarketValue,
+      returnValue: returnValue,
+      returnPercentage: returnPercentage,
+    );
+  }
+}
+
 class _WalletTabState extends State<WalletTab> {
   final ApiServiceGecko _apiServiceGecko = ApiServiceGecko();
   late Box _userWalletBox;
   bool _isLoading = true;
   String _username = '';
   bool _isBalanceVisible = true;
+  WalletSummary? _walletSummary; // Tambah state untuk wallet summary
 
   @override
   void initState() {
@@ -48,7 +78,7 @@ class _WalletTabState extends State<WalletTab> {
         _marketCoins = fetchedCoins;
         _isLoading = false;
       });
-    }   catch (e) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -63,6 +93,22 @@ class _WalletTabState extends State<WalletTab> {
     _userWalletBox = await Hive.openBox('wallet_$_username');
     setState(() {
       _isLoading = false;
+    });
+  }
+
+  void _updateWalletSummary(double totalAssetValue) {
+    // Ambil static value dari total deposit
+    double staticValue = 0;
+    for (var key in _userWalletBox.keys) {
+      final asset = _userWalletBox.get(key);
+      if (asset != null && asset['amount'] is num) {
+        staticValue += (asset['amount'] as num).toDouble() *
+            (asset['initial_price'] ?? asset['price_in_idr'] as num).toDouble();
+      }
+    }
+
+    setState(() {
+      _walletSummary = WalletSummary.calculate(staticValue, totalAssetValue);
     });
   }
 
@@ -88,15 +134,26 @@ class _WalletTabState extends State<WalletTab> {
       valueListenable: _userWalletBox.listenable(),
       builder: (context, Box box, _) {
         double totalAssetValue = 0;
+        double staticValue = 0;
+
         for (var key in box.keys) {
           final asset = box.get(key);
           if (asset != null &&
               asset['amount'] is num &&
               asset['price_in_idr'] is num) {
-            totalAssetValue += (asset['amount'] as num).toDouble() *
+            final double amount = (asset['amount'] as num).toDouble();
+            final double currentPrice =
                 (asset['price_in_idr'] as num).toDouble();
+            final double initialPrice =
+                (asset['initial_price'] ?? currentPrice).toDouble();
+
+            totalAssetValue += amount * currentPrice;
+            staticValue += amount * initialPrice;
           }
         }
+
+        final walletSummary =
+            WalletSummary.calculate(staticValue, totalAssetValue);
 
         return Scaffold(
           backgroundColor: Colors.grey[50],
@@ -105,7 +162,7 @@ class _WalletTabState extends State<WalletTab> {
             child: Column(
               children: [
                 const SizedBox(height: 8),
-                _buildHeader(totalAssetValue),
+                _buildHeader(totalAssetValue, walletSummary),
                 const SizedBox(height: 24),
                 _buildActionButtons(),
                 const SizedBox(height: 24),
@@ -137,7 +194,7 @@ class _WalletTabState extends State<WalletTab> {
     );
   }
 
-  Widget _buildHeader(double totalAssetValue) {
+  Widget _buildHeader(double totalAssetValue, WalletSummary summary) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -170,7 +227,44 @@ class _WalletTabState extends State<WalletTab> {
             ),
           ],
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Text(
+              'Return Value (1D): ',
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+            Text(
+              _isBalanceVisible ? _formatCurrency(summary.returnValue) : '****',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: summary.returnValue >= 0 ? Colors.green : Colors.red,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: summary.returnPercentage >= 0
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                _isBalanceVisible
+                    ? '${summary.returnPercentage >= 0 ? '+' : ''}${summary.returnPercentage.toStringAsFixed(2)}%'
+                    : '****',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color:
+                      summary.returnPercentage >= 0 ? Colors.green : Colors.red,
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -300,7 +394,6 @@ class _WalletTabState extends State<WalletTab> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                // 2. Gunakan variabel 'amount' yang sudah aman, bukan asset['amount'] lagi
                 '${amountFormatter.format(amount)} ${asset['short_name'] ?? ''}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
@@ -309,11 +402,9 @@ class _WalletTabState extends State<WalletTab> {
                 ),
               ),
               Text(
-                // Sekarang `valueFormatter` sudah bisa digunakan
                 valueFormatter.format(totalValuePerCoin),
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
-              
             ],
           ),
         ],
