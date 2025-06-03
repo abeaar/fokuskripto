@@ -3,7 +3,7 @@ import 'package:fokuskripto/pages/Profile_Page.dart';
 import 'DashboardTab.dart';
 import 'MarketTab.dart';
 import 'WalletTab.dart';
-import 'TradeTab.dart'; 
+import 'TradeTab.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,17 +32,16 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => Scaffold(
-              appBar: AppBar(
-                title: const Text('Profil Saya'), 
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ),
-              body: const ProfilePage(),
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text('Profil Saya'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.of(context).pop(),
             ),
+          ),
+          body: const ProfilePage(),
+        ),
       ),
     );
   }
@@ -62,56 +61,57 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title, style: TextStyle(color: const Color.fromARGB(255, 27, 102, 30)),),
-        backgroundColor: Colors.white,
+        title: Text(
+          title,
+          style: TextStyle(color: const Color.fromARGB(255, 59, 160, 63)),
+        ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.person_2_outlined),
-            color: Color.fromARGB(255, 27, 102, 30), 
+            color: Color.fromARGB(255, 59, 160, 63),
             tooltip: 'Profil Pengguna',
             onPressed: () {
-              _navigateToProfile(context); 
+              _navigateToProfile(context);
             },
           ),
         ],
       ),
       body: IndexedStack(
-        index: _selectedIndex, 
-        children: _widgetOptions, 
+        index: _selectedIndex,
+        children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home_outlined,
-            ), 
+            ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.analytics_outlined,
-            ), 
+            ),
             label: 'Market',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.swap_horiz_outlined), 
+            icon: Icon(Icons.swap_horiz_outlined),
             label: 'Trade',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.wallet_outlined,
-            ), 
+            ),
             label: 'Wallet',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color.fromARGB(255, 21, 179, 146),
-        unselectedItemColor: const Color.fromARGB(255, 122, 118, 118),
-        showUnselectedLabels:
-            true, 
-        type:
-            BottomNavigationBarType
-                .fixed, 
+        selectedItemColor: Color.fromARGB(255, 101, 204, 104),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        unselectedItemColor: const Color.fromARGB(255, 184, 184, 184),
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
       ),
     );

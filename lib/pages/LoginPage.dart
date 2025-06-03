@@ -119,14 +119,23 @@ class _LoginPageState extends State<LoginPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: SizedBox(
-            height: 330,
+            height: 600,
             child: Form(
               key: formKey,
               child: Column(
                 children: [
+                  CircleAvatar(
+                    radius: 80,
+                    backgroundColor: const Color.fromARGB(255, 59, 58, 58),
+                    child: Image.asset('assets/logo/kriptoin.png'),
+                  ),
                   Text(
-                    "/; Kriptoin /",
-                    style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+                    "Kriptoin;",
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Courrier',
+                    ),
                   ),
                   SizedBox(height: 24),
                   TextFormField(
