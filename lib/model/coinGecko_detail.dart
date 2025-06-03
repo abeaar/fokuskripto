@@ -1,14 +1,11 @@
-// lib/models/coin_gecko_detail_model.dart
-
 class CoinGeckoDetailModel {
   final String id;
   final String symbol;
   final String name;
-  final String? imageLarge; // Dari json['image']['large']
-  final String? descriptionEn; // Dari json['description']['en']
-  final String? homepageUrl; // Dari json['links']['homepage'][0]
+  final String? imageLarge; 
+  final String? descriptionEn; 
+  final String? homepageUrl; 
 
-  // Data Pasar dari json['market_data']
   final double currentPriceIdr;
   final double? high24hIdr;
   final double? low24hIdr;

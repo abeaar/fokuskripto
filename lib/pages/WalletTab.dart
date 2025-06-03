@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'MarketTab.dart';
+import '../services/api_gecko.dart';
+import '../model/coinGecko.dart';
 import './DepositPage.dart';
 import './WithdrawPage.dart';
 
@@ -13,7 +15,10 @@ class WalletTab extends StatefulWidget {
   State<WalletTab> createState() => _WalletTabState();
 }
 
+List<CoinGeckoMarketModel> _marketCoins = [];
+
 class _WalletTabState extends State<WalletTab> {
+  final ApiServiceGecko _apiServiceGecko = ApiServiceGecko();
   late Box _userWalletBox;
   bool _isLoading = true;
   String _username = '';
@@ -23,10 +28,35 @@ class _WalletTabState extends State<WalletTab> {
   void initState() {
     super.initState();
     _initializeWalletData();
+    _fetchMarketData();
+  }
+
+  Future<void> _fetchMarketData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Ambil data dari CoinGecko, default vs_currency='idr', per_page=100
+      final fetchedCoins = await _apiServiceGecko.fetchCoinMarkets(
+        vsCurrency: 'idr',
+        perPage: 100,
+      );
+      if (!mounted) return;
+      setState(() {
+        _marketCoins = fetchedCoins;
+        _isLoading = false;
+      });
+    }   catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _initializeWalletData() async {
-    // Hindari error jika widget sudah di-dispose
     if (!mounted) return;
     final prefs = await SharedPreferences.getInstance();
     _username = prefs.getString('username') ?? 'Guest';
@@ -35,8 +65,6 @@ class _WalletTabState extends State<WalletTab> {
       _isLoading = false;
     });
   }
-
-  // --- HAPUS FUNGSI _calculateTotalValue() DARI STATE ---
 
   String _formatCurrency(double value) {
     final format = NumberFormat.currency(
@@ -56,7 +84,6 @@ class _WalletTabState extends State<WalletTab> {
       );
     }
 
-    // ValueListenableBuilder sekarang membungkus semua widget yang bergantung pada data wallet
     return ValueListenableBuilder(
       valueListenable: _userWalletBox.listenable(),
       builder: (context, Box box, _) {
@@ -66,13 +93,11 @@ class _WalletTabState extends State<WalletTab> {
           if (asset != null &&
               asset['amount'] is num &&
               asset['price_in_idr'] is num) {
-            totalAssetValue +=
-                (asset['amount'] as num).toDouble() *
+            totalAssetValue += (asset['amount'] as num).toDouble() *
                 (asset['price_in_idr'] as num).toDouble();
           }
         }
 
-        // UI utama sekarang di-build di dalam builder ini
         return Scaffold(
           backgroundColor: Colors.grey[50],
           body: Padding(
@@ -80,7 +105,6 @@ class _WalletTabState extends State<WalletTab> {
             child: Column(
               children: [
                 const SizedBox(height: 8),
-                // Kirim data yang sudah dihitung sebagai parameter
                 _buildHeader(totalAssetValue),
                 const SizedBox(height: 24),
                 _buildActionButtons(),
@@ -88,8 +112,7 @@ class _WalletTabState extends State<WalletTab> {
                 Row(
                   children: [
                     Icon(
-                      Icons
-                          .account_balance_wallet_outlined, // Anda bisa ganti icon ini
+                      Icons.account_balance_wallet_outlined,
                       color: Colors.grey[800],
                       size: 20,
                     ),
@@ -105,7 +128,6 @@ class _WalletTabState extends State<WalletTab> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Kirim box langsung ke list
                 _buildCoinList(box),
               ],
             ),
@@ -141,7 +163,6 @@ class _WalletTabState extends State<WalletTab> {
                 color: Colors.grey,
               ),
               onPressed: () {
-                // setState hanya untuk UI toggle, ini benar
                 setState(() {
                   _isBalanceVisible = !_isBalanceVisible;
                 });
@@ -232,17 +253,14 @@ class _WalletTabState extends State<WalletTab> {
   }
 
   Widget _buildCoinTile(dynamic asset) {
-    // Formatter untuk jumlah koin (misal: 1,000.12345 BTC)
     final amountFormatter = NumberFormat('#,##0.########', 'en_US');
 
-    // 1. Definisikan formatter untuk mata uang Rupiah
     final valueFormatter = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'IDR ',
       decimalDigits: 0,
     );
 
-    // Ambil dan konversi nilai dengan aman
     final double amount = (asset['amount'] as num?)?.toDouble() ?? 0.0;
     final double price = (asset['price_in_idr'] as num?)?.toDouble() ?? 0.0;
     final double totalValuePerCoin = amount * price;
@@ -295,6 +313,7 @@ class _WalletTabState extends State<WalletTab> {
                 valueFormatter.format(totalValuePerCoin),
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
+              
             ],
           ),
         ],

@@ -8,7 +8,6 @@ import 'pages/LoginPage.dart';
 import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
 
-// Asumsikan kode CryptoListPage di atas ada di file yang sama atau diimpor
 Future <void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   

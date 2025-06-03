@@ -46,7 +46,6 @@ class _LoginPageState extends State<LoginPage> {
 
   checkIfAlreadyLogin() async {
     SharedPreferences loginData = await SharedPreferences.getInstance();
-    // Logika diperbaiki: jika 'isLogin' null, anggap false (belum login)
     bool isLoggedIn = loginData.getBool(spIsLoginKey) ?? false;
 
     if (isLoggedIn) {
@@ -84,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
             'short_name': 'IDR',
             'image_url':
                 'https://cdn-icons-png.flaticon.com/512/13893/13893854.png',
-            'amount': 100000,
+            'amount': 0,
             'price_in_idr': 1,
           });
         }
@@ -130,7 +129,6 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 24),
-
                   TextFormField(
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -148,7 +146,6 @@ class _LoginPageState extends State<LoginPage> {
                     maxLength: 64,
                   ),
                   SizedBox(height: 14),
-
                   TextFormField(
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -176,7 +173,6 @@ class _LoginPageState extends State<LoginPage> {
                     maxLength: 12,
                   ),
                   SizedBox(height: 14),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -190,7 +186,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 10),
-
                   SizedBox(
                     width: double.infinity,
                     child: Center(
@@ -206,15 +201,14 @@ class _LoginPageState extends State<LoginPage> {
                                 decoration: TextDecoration.underline,
                                 fontSize: 16,
                               ),
-                              recognizer:
-                                  TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Navigator.pushNamedAndRemoveUntil(
-                                        context,
-                                        '/register_page',
-                                        (route) => true,
-                                      );
-                                    },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    '/register_page',
+                                    (route) => true,
+                                  );
+                                },
                             ),
                           ],
                         ),
