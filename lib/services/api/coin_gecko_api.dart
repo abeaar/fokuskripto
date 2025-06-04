@@ -1,7 +1,7 @@
 import 'package:fokuskripto/services/api/api_exception.dart';
 import 'package:fokuskripto/services/api/endpoints.dart';
 import 'package:fokuskripto/services/base_network.dart';
-import 'package:fokuskripto/services/cache/cache_manager.dart';
+import 'package:fokuskripto/services/cache/cache_manager.dart ';
 import 'package:fokuskripto/model/coinGecko.dart';
 import 'package:fokuskripto/model/coinGecko_detail.dart';
 
@@ -37,8 +37,8 @@ class CoinGeckoApi {
         if (cached != null) {
           return _parseMarketData(cached); // Mengembalikan data dari cache
         }
-      } on CacheException catch (e) {
-        print('Cache error: ${e.message}');
+      } catch (e) {
+        print('Cache error: ${e}');
       }
     }
     // fetch API
@@ -78,11 +78,11 @@ class CoinGeckoApi {
       throw ApiException('Failed to parse market data: ${e.toString()}');
     }
   }
-  
+
   Future<CoinGeckoDetailModel?> getCoinDetail(
     String coinId, {
     String vsCurrency = 'idr',
-    bool forceRefresh = false,
+    bool forceRefresh = true,
   }) async {
     final cacheKey = _cache.generateKey(
       prefix: 'detail',
@@ -96,8 +96,8 @@ class CoinGeckoApi {
         if (cached != null) {
           return CoinGeckoDetailModel.fromJson(cached);
         }
-      } on CacheException catch (e) {
-        print('Cache error: ${e.message}');
+      } catch (e) {
+        print('Cache error: ${e}');
       }
     }
 
@@ -139,8 +139,8 @@ class CoinGeckoApi {
         if (cached != null) {
           return _parseChartData(cached);
         }
-      } on CacheException catch (e) {
-        print('Cache error: ${e.message}');
+      } catch (e) {
+        print('Cache error: ${e}');
       }
     }
 
@@ -168,7 +168,6 @@ class CoinGeckoApi {
       );
     }
   }
-
 
   List<List<double>> _parseChartData(List<dynamic> data) {
     try {

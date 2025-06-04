@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'MarketTab.dart';
-import '../services/api_gecko.dart';
+import '../services/api/coin_gecko_api.dart';
 import '../model/coinGecko.dart';
 import './DepositPage.dart';
 import './WithdrawPage.dart';
@@ -47,7 +47,7 @@ class WalletSummary {
 }
 
 class _WalletTabState extends State<WalletTab> {
-  final ApiServiceGecko _apiServiceGecko = ApiServiceGecko();
+  final CoinGeckoApi _apiServiceGecko = CoinGeckoApi();
   late Box _userWalletBox;
   bool _isLoading = true;
   String _username = '';
@@ -69,7 +69,7 @@ class _WalletTabState extends State<WalletTab> {
 
     try {
       // Ambil data dari CoinGecko, default vs_currency='idr', per_page=100
-      final fetchedCoins = await _apiServiceGecko.fetchCoinMarkets(
+      final fetchedCoins = await _apiServiceGecko.getMarkets(
         vsCurrency: 'idr',
         perPage: 100,
       );

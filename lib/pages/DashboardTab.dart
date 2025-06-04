@@ -1,79 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/api/coin_gecko_api.dart';
-import '../services/api/api_exception.dart';
+import 'package:provider/provider.dart';
+import '../services/providers/market_provider.dart';
 import '../model/coinGecko.dart';
 import '../widgets/dashboardtab/coin_list_item.dart';
 import '../widgets/dashboardtab/top_coin.dart';
 
-class DashboardTab extends StatefulWidget {
+class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
 
-  @override
-  State<DashboardTab> createState() => _DashboardTabState();
-}
-
-class _DashboardTabState extends State<DashboardTab> {
-  final CoinGeckoApi _api = CoinGeckoApi();
-
-  bool _isLoading = true;
-  String? _error;
-  List<CoinGeckoMarketModel> _topCoins = [];
-  List<CoinGeckoMarketModel> _trendingCoins = [];
-
-  final NumberFormat _priceFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchCoins();
+  NumberFormat _getPriceFormatter() {
+    return NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
   }
 
-  Future<void> _fetchCoins() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      // Fetch top 8 coins by market cap
-      final fetchedCoins = await _api.getMarkets(
-        vsCurrency: 'idr',
-        perPage: 8, // Fetch 8 coins total
-        page: 1,
-      );
-
-      if (!mounted) return;
-      setState(() {
-        // Split the coins into top 3 and trending 5
-        _topCoins = fetchedCoins.take(3).toList();
-        _trendingCoins = fetchedCoins.skip(3).take(5).toList();
-        _isLoading = false;
-      });
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Gagal memuat data: ${e.message}';
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Terjadi kesalahan tidak terduga: ${e.toString()}';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Widget _buildSummarySection() {
-    if (_topCoins.isEmpty) {
+  Widget _buildSummarySection(
+      BuildContext context, List<CoinGeckoMarketModel> topCoins) {
+    if (topCoins.isEmpty) {
       return const SizedBox.shrink();
     }
+
+    final priceFormatter = _getPriceFormatter();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,13 +40,13 @@ class _DashboardTabState extends State<DashboardTab> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
-            children: _topCoins.map((coin) {
+            children: topCoins.map((coin) {
               return Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: TopCoin(
                     coin: coin,
-                    priceFormatter: _priceFormatter,
+                    priceFormatter: priceFormatter,
                   ),
                 ),
               );
@@ -107,7 +57,10 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
-  Widget _buildTrendingSection() {
+  Widget _buildTrendingSection(
+      BuildContext context, List<CoinGeckoMarketModel> trendingCoins) {
+    final priceFormatter = _getPriceFormatter();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -120,48 +73,58 @@ class _DashboardTabState extends State<DashboardTab> {
                 ),
           ),
         ),
-        ..._trendingCoins.map((coin) => CoinListItem(
+        ...trendingCoins.map((coin) => CoinListItem(
               coin: coin,
-              priceFormatter: _priceFormatter,
+              priceFormatter: priceFormatter,
             )),
       ],
     );
   }
 
-  Widget _buildContent() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildContent(BuildContext context) {
+    return Consumer<MarketProvider>(
+      builder: (context, marketData, _) {
+        if (marketData.isLoading && marketData.allCoins.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(_error!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _fetchCoins,
-              child: const Text('Coba Lagi'),
+        if (marketData.error != null && marketData.allCoins.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(marketData.error!,
+                    style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => marketData.fetchData(),
+                  child: const Text('Coba Lagi'),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
-    }
+          );
+        }
 
-    return RefreshIndicator(
-      onRefresh: _fetchCoins,
-      child: ListView(
-        children: [
-          _buildSummarySection(),
-          _buildTrendingSection(),
-        ],
-      ),
+        return RefreshIndicator(
+          onRefresh: () => marketData.fetchData(),
+          child: ListView(
+            children: [
+              if (marketData.isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              _buildSummarySection(context, marketData.topCoins),
+              _buildTrendingSection(context, marketData.trendingCoins),
+            ],
+          ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return _buildContent();
+    return _buildContent(context);
   }
 }
