@@ -6,6 +6,10 @@ import 'package:fokuskripto/model/coinGecko.dart';
 import 'package:fokuskripto/model/coinGecko_detail.dart';
 
 class CoinGeckoApi {
+  static const String _apiKey = 'CG-fG8KAiNzkZtwkafsmTVTjnXT';
+  static const Map<String, String> _headers = {
+    'x-cg-demo-api-key': _apiKey,
+  };
   final BaseNetworkService _network;
   final CacheManager _cache;
 
@@ -50,8 +54,8 @@ class CoinGeckoApi {
         page: page,
       );
 
-      final response =
-          await _network.get('${CoinGeckoEndpoints.baseUrl}$endpoint');
+      final response = await _network
+          .get('${CoinGeckoEndpoints.baseUrl}$endpoint', headers: _headers);
 
       if (response is List) {
         // Simpan ke cache untuk penggunaan berikutnya
@@ -85,17 +89,23 @@ class CoinGeckoApi {
     bool forceRefresh = true,
   }) async {
     final cacheKey = _cache.generateKey(
-      prefix: 'detail',
+      prefix: 'detailcache',
       coinId: coinId,
       vsCurrency: vsCurrency,
     );
+    print(
+        '[DEBUG] getCoinDetail cacheKey: $cacheKey, forceRefresh: $forceRefresh');
 
     if (!forceRefresh) {
       try {
         final cached = await _cache.get<Map<String, dynamic>>(cacheKey);
         if (cached != null) {
+          print(
+              '[DEBUG] getCoinDetail: Data diambil dari CACHE untuk $cacheKey');
           return CoinGeckoDetailModel.fromJson(cached);
         }
+        print(
+            '[DEBUG] getCoinDetail: Cache MISS, akan fetch dari API untuk $cacheKey');
       } catch (e) {
         print('Cache error: ${e}');
       }
@@ -103,11 +113,13 @@ class CoinGeckoApi {
 
     try {
       final endpoint = CoinGeckoEndpoints.coinDetail(coinId);
-      final response =
-          await _network.get('${CoinGeckoEndpoints.baseUrl}$endpoint');
+      final response = await _network
+          .get('${CoinGeckoEndpoints.baseUrl}$endpoint', headers: _headers);
 
       if (response is Map<String, dynamic>) {
         await _cache.set(cacheKey, response);
+        print(
+            '[DEBUG] getCoinDetail: Data diambil dari API dan disimpan ke CACHE untuk $cacheKey');
         return CoinGeckoDetailModel.fromJson(response);
       }
 
@@ -132,13 +144,19 @@ class CoinGeckoApi {
       vsCurrency: vsCurrency,
       days: days,
     );
+    print(
+        '[DEBUG] getCoinDetail cacheKey: $cacheKey, forceRefresh: $forceRefresh');
 
     if (!forceRefresh) {
       try {
         final cached = await _cache.get<List<dynamic>>(cacheKey);
         if (cached != null) {
+          print(
+              '[DEBUG] getMarketChart: Data diambil dari CACHE untuk $cacheKey');
           return _parseChartData(cached);
         }
+        print(
+            '[DEBUG] getMarketChart: Cache MISS, akan fetch dari API untuk $cacheKey');
       } catch (e) {
         print('Cache error: ${e}');
       }
@@ -151,11 +169,13 @@ class CoinGeckoApi {
         days: days,
       );
 
-      final response =
-          await _network.get('${CoinGeckoEndpoints.baseUrl}$endpoint');
+      final response = await _network
+          .get('${CoinGeckoEndpoints.baseUrl}$endpoint', headers: _headers);
 
       if (response is Map<String, dynamic> && response['prices'] is List) {
         final List<dynamic> prices = response['prices'];
+        print(
+            '[DEBUG] getMarketChart: Data diambil dari API dan disimpan ke CACHE untuk $cacheKey');
         await _cache.set(cacheKey, prices);
         return _parseChartData(prices);
       }

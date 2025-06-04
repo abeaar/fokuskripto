@@ -36,6 +36,8 @@ class CacheManager {
   }) {
     if (prefix.startsWith("detail_")) {
       return "${prefix}_${coinId}_$vsCurrency";
+    } else if (prefix.startsWith("detailcache")) {
+      return "${prefix}_${coinId}_$vsCurrency";
     } else if (prefix.startsWith("chart_")) {
       return "${prefix}_${coinId}_${vsCurrency}_${days ?? '1'}d";
     }
