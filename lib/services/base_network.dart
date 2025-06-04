@@ -1,12 +1,12 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:io'; // Untuk SocketException
+import 'package:http/http.dart' as http;
+import 'dart:io';
 
 // Custom Exception untuk Network Errors
 class NetworkException implements Exception {
   final String message;
   final int? statusCode;
-  final String? responseBody; // Tambahkan ini untuk info lebih lanjut
+  final String? responseBody;
 
   NetworkException(this.message, {this.statusCode, this.responseBody});
 
@@ -17,22 +17,38 @@ class NetworkException implements Exception {
 }
 
 class BaseNetworkService {
-  Future<dynamic> get(String url) async {
-    final uri = Uri.parse(url);
+  final http.Client _client;
+
+  BaseNetworkService({http.Client? client}) : _client = client ?? http.Client();
+
+  Future<dynamic> get(
+    String url, {
+    Map<String, String>? headers,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    final uri = Uri.parse(url).replace(queryParameters: queryParameters);
     print('BaseNetworkService: Mengirim GET request ke $url'); // Logging
 
     try {
-      final response = await http
-          .get(uri)
-          .timeout(const Duration(seconds: 15)); // Tambahkan timeout
+      final response = await _client
+          .get(
+            uri,
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+
       print(
-        'BaseNetworkService: Menerima response dengan status ${response.statusCode}',
-      ); // Logging
+          'BaseNetworkService: Menerima response dengan status ${response.statusCode}'); // Logging
       return _processResponse(response);
     } on SocketException catch (e) {
       print('BaseNetworkService: SocketException - ${e.toString()}'); // Logging
       throw NetworkException(
         'Tidak ada koneksi internet atau server tidak ditemukan.',
+        responseBody: e.toString(),
+      );
+    } catch (e) {
+      throw NetworkException(
+        'Network error: ${e.toString()}',
         responseBody: e.toString(),
       );
     }
@@ -41,10 +57,10 @@ class BaseNetworkService {
   dynamic _processResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) {
-        return null; // atau throw NetworkException('Empty response body');
+        return null;
       }
       try {
-        return jsonDecode(response.body);
+        return json.decode(response.body);
       } catch (e) {
         throw NetworkException(
           'Gagal mem-parsing JSON: ${e.toString()}',
@@ -55,12 +71,16 @@ class BaseNetworkService {
     } else {
       print(
         'BaseNetworkService: Error dengan status ${response.statusCode}, body: ${response.body}',
-      ); // Logging
+      );
       throw NetworkException(
-        'Error dari server (Status ${response.statusCode})',
+        'Error dari server',
         statusCode: response.statusCode,
         responseBody: response.body,
       );
     }
+  }
+
+  void dispose() {
+    _client.close();
   }
 }

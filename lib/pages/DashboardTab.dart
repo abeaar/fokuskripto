@@ -1,65 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../model/coin.dart';
-import '../widgets/coin_list_item.dart';
-import '../services/api_service.dart';
-import '../widgets/top_coin.dart';
+import 'package:provider/provider.dart';
+import '../services/providers/market_provider.dart';
+import '../model/coinGecko.dart';
+import '../widgets/dashboardtab/coin_list_item.dart';
+import '../widgets/dashboardtab/top_coin.dart';
 
-class DashboardTab extends StatefulWidget {
+class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
 
-  @override
-  State<DashboardTab> createState() => _DashboardTabState();
-}
-
-class _DashboardTabState extends State<DashboardTab> {
-  final ApiService _apiService = ApiService();
-
-  bool _isLoading = true;
-  String? _error;
-  List<Coin> _coins = [];
-  final NumberFormat _priceFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchCoins();
+  NumberFormat _getPriceFormatter() {
+    return NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
   }
 
-  Future<void> _fetchCoins() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final fetchedCoins = await _apiService.fetchCoins();
-      if (!mounted) return;
-      setState(() {
-        _coins = fetchedCoins;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Terjadi kesalahan tidak terduga: ${e.toString()}';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Widget _buildSummarySection() {
-    if (_coins.isEmpty) {
-      return const SizedBox.shrink(); // Tidak tampilkan apa-apa jika koin kosong
-    }
-    final topCoin = _coins.take(3).toList();
-    if (topCoin.isEmpty) {
+  Widget _buildSummarySection(
+      BuildContext context, List<CoinGeckoMarketModel> topCoins) {
+    if (topCoins.isEmpty) {
       return const SizedBox.shrink();
     }
+
+    final priceFormatter = _getPriceFormatter();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,74 +32,99 @@ class _DashboardTabState extends State<DashboardTab> {
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
           child: Text(
             "Top Coin",
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12.0,
-          ), // Padding untuk Row
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
-            children: <Widget>[
-              // Eksplisit membuat List<Widget>
-              ...topCoin.map((coin) {
-                // Spread hasil map
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: TopCoin(coin: coin, priceFormatter: _priceFormatter),
+            children: topCoins.map((coin) {
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: TopCoin(
+                    coin: coin,
+                    priceFormatter: priceFormatter,
                   ),
-                );
-              }).toList(),
-              ...List.generate(
-                3 - topCoin.length,
-                (index) => Expanded(child: Container()),
-                growable: false,
-              ),
-            ],
+                ),
+              );
+            }).toList(),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildContent() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return RefreshIndicator(
-      onRefresh: _fetchCoins,
-      child: ListView.builder(
-        itemCount: 1 + 1 + _coins.length, // Summary + Judul List + Item List
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildSummarySection();
-          }
-          if (index == 1) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-              child: Text(
-                "Trending",
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            );
-          }
-          final coinIndex = index - 2;
-          return CoinListItem(
-            coin: _coins[coinIndex],
-            priceFormatter: _priceFormatter,
+  Widget _buildTrendingSection(
+      BuildContext context, List<CoinGeckoMarketModel> trendingCoins) {
+    final priceFormatter = _getPriceFormatter();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+          child: Text(
+            "Trending",
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ),
+        ...trendingCoins.map((coin) => CoinListItem(
+              coin: coin,
+              priceFormatter: priceFormatter,
+            )),
+      ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Consumer<MarketProvider>(
+      builder: (context, marketData, _) {
+        if (marketData.isLoading && marketData.allCoins.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (marketData.error != null && marketData.allCoins.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(marketData.error!,
+                    style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => marketData.fetchData(),
+                  child: const Text('Coba Lagi'),
+                ),
+              ],
+            ),
           );
-        },
-      ),
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => marketData.fetchData(),
+          child: ListView(
+            children: [
+              if (marketData.isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              _buildSummarySection(context, marketData.topCoins),
+              _buildTrendingSection(context, marketData.trendingCoins),
+            ],
+          ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return _buildContent();
+    return _buildContent(context);
   }
 }
