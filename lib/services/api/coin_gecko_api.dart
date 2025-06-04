@@ -39,6 +39,7 @@ class CoinGeckoApi {
       try {
         final cached = await _cache.get<List<dynamic>>(cacheKey);
         if (cached != null) {
+          print('[DEBUG] getMarkets: Data diambil dari CACHE untuk $cacheKey');
           return _parseMarketData(cached); // Mengembalikan data dari cache
         }
       } catch (e) {
@@ -60,6 +61,8 @@ class CoinGeckoApi {
       if (response is List) {
         // Simpan ke cache untuk penggunaan berikutnya
         await _cache.set(cacheKey, response);
+        print(
+            '[DEBUG] getMarkets: Data diambil dari API dan disimpan ke CACHE untuk $cacheKey');
         return _parseMarketData(response);
       }
 
