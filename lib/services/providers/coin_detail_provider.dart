@@ -11,13 +11,25 @@ class CoinDetailProvider extends ChangeNotifier {
   List<FlSpot> chartSpots = [];
   bool isLoading = false;
   String? error;
+  DateTime? _lastUpdated;
+  static const int _refreshIntervalSeconds = 60; // interval cache, bisa diubah
 
   CoinDetailProvider({required this.coinId}) {
     print('CoinDetailProvider created for $coinId');
-    fetchAll(force: true);
+    fetchAll(force: false);
   }
 
   Future<void> fetchAll({bool force = false}) async {
+    // Cek interval cache
+    if (!force && _lastUpdated != null) {
+      final timeSinceLastUpdate = DateTime.now().difference(_lastUpdated!);
+      if (timeSinceLastUpdate.inSeconds < _refreshIntervalSeconds) {
+        print(
+          'Data masih fresh, tidak fetch ulang',
+        );
+        return;
+      }
+    }
     isLoading = true;
     error = null;
     notifyListeners();
@@ -33,6 +45,7 @@ class CoinDetailProvider extends ChangeNotifier {
         return FlSpot(entry.key.toDouble(), entry.value[1]);
       }).toList();
       chartSpots.sort((a, b) => a.x.compareTo(b.x));
+      _lastUpdated = DateTime.now();
     } catch (e) {
       error = e.toString();
     }

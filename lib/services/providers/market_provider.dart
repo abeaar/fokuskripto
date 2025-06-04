@@ -11,9 +11,9 @@ class MarketProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   List<CoinGeckoMarketModel> _allCoins = [];
+  DateTime? _lastUpdated;
   String _sortField = 'market_cap_rank';
   bool _isAscending = true;
-  DateTime? _lastUpdated;
   static const int _refreshIntervalSeconds = 10;
   static const int _forceRefreshIntervalMinutes = 1;
 
@@ -56,6 +56,7 @@ class MarketProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
     }
+
     try {
       final coins = await _api.getMarkets(
         vsCurrency: 'idr',
@@ -64,7 +65,7 @@ class MarketProvider extends ChangeNotifier {
         forceRefresh: forceRefresh,
       );
 
-      _allCoins = _applySorting(coins);
+      _allCoins = coins;
       _lastUpdated = DateTime.now();
       _error = null;
     } catch (e) {
@@ -83,7 +84,6 @@ class MarketProvider extends ChangeNotifier {
     }
   }
 
-  // Sorting methods
   void sortBy(String field) {
     if (_sortField == field) {
       _isAscending = !_isAscending;
@@ -113,7 +113,7 @@ class MarketProvider extends ChangeNotifier {
             compareResult =
                 (a.totalVolume ?? 0.0).compareTo(b.totalVolume ?? 0.0);
             break;
-          default: // default sort by market cap rank
+          default:
             compareResult =
                 (a.marketCapRank ?? 0).compareTo(b.marketCapRank ?? 0);
         }
