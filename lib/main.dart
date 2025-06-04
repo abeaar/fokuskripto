@@ -45,15 +45,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider2<MarketProvider, WalletProvider,
             TradeProvider>(
           create: (context) => TradeProvider(
-            marketProvider: context.read<MarketProvider>(),
-            walletProvider: context.read<WalletProvider>(),
+            marketProvider: Provider.of<MarketProvider>(context, listen: false),
+            walletProvider: Provider.of<WalletProvider>(context, listen: false),
           ),
-          update: (context, marketProvider, walletProvider,
-                  previousTradeProvider) =>
-              TradeProvider(
-            marketProvider: marketProvider,
-            walletProvider: walletProvider,
-          ),
+          update:
+              (context, marketProvider, walletProvider, previousTradeProvider) {
+            if (previousTradeProvider != null) {
+              previousTradeProvider.marketProvider = marketProvider;
+              previousTradeProvider.walletProvider = walletProvider;
+              return previousTradeProvider;
+            }
+            return TradeProvider(
+              marketProvider: marketProvider,
+              walletProvider: walletProvider,
+            );
+          },
         ),
       ],
       child: MaterialApp(

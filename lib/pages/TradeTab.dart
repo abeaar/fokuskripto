@@ -8,7 +8,7 @@ import '../model/coinGecko.dart';
 import '../services/providers/market_provider.dart';
 import '../services/providers/trade_provider.dart';
 import '../services/providers/wallet_provider.dart';
-import '../widgets/percentage_buttons.dart';
+import '../widgets/trade/percentage_buttons.dart';
 
 class TradeTab extends StatefulWidget {
   const TradeTab({super.key});
@@ -95,23 +95,58 @@ class _TradeTabState extends State<TradeTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Debug Info (temporary)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Wallet IDR: ${walletProvider.getBalance('IDR')}'),
-                      Text('Trade IDR: ${tradeProvider.idrBalance}'),
-                      Text('Is Initialized: ${tradeProvider.isInitialized}'),
-                    ],
+              // Mode Switch
+
+              // Coin Selection Dropdown with Search
+              DropdownSearch<CoinGeckoMarketModel>(
+                items: marketProvider.allCoins,
+                selectedItem: marketProvider.allCoins.firstWhere(
+                  (coin) => coin.id == tradeProvider.selectedCoinId,
+                  orElse: () => marketProvider.allCoins.first,
+                ),
+                itemAsString: (coin) =>
+                    "${coin.name} (${coin.symbol.toUpperCase()})",
+                onChanged: (coin) {
+                  if (coin != null) tradeProvider.selectCoin(coin);
+                },
+                filterFn: (coin, filter) {
+                  return coin.name
+                          .toLowerCase()
+                          .contains(filter.toLowerCase()) ||
+                      coin.symbol.toLowerCase().contains(filter.toLowerCase());
+                },
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: "Pilih Koin",
+                    hintText: "Cari koin untuk trading",
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                ),
+                popupProps: PopupProps.menu(
+                  showSearchBox: true,
+                  searchFieldProps: TextFieldProps(
+                    decoration: InputDecoration(
+                      hintText: "Cari koin...",
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  title: Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Text(
+                      "Cari Koin",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Mode Switch
               Row(
                 children: [
                   Expanded(
@@ -144,28 +179,6 @@ class _TradeTabState extends State<TradeTab> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Coin Selection Dropdown
-              DropdownSearch<CoinGeckoMarketModel>(
-                items: marketProvider.allCoins,
-                selectedItem: marketProvider.allCoins.firstWhere(
-                  (coin) => coin.id == tradeProvider.selectedCoinId,
-                  orElse: () => marketProvider.allCoins.first,
-                ),
-                itemAsString: (coin) =>
-                    "${coin.name} (${coin.symbol.toUpperCase()})",
-                onChanged: (coin) {
-                  if (coin != null) tradeProvider.selectCoin(coin);
-                },
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                    labelText: "Pilih Koin",
-                    hintText: "Pilih koin untuk trading",
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
               // Price Info
               Container(
                 padding: const EdgeInsets.all(16),

@@ -6,8 +6,8 @@ import 'wallet_provider.dart';
 enum TradeMode { buy, sell }
 
 class TradeProvider extends ChangeNotifier {
-  final MarketProvider marketProvider;
-  final WalletProvider walletProvider;
+   MarketProvider marketProvider;
+   WalletProvider walletProvider;
 
   // Trading state
   TradeMode _currentMode = TradeMode.buy;
@@ -23,8 +23,9 @@ class TradeProvider extends ChangeNotifier {
     required this.marketProvider,
     required this.walletProvider,
   }) {
-    print('TradeProvider: Initializing...'); // Debug log
+    print('TradeProvider: Initializing...');
     _initialize();
+    marketProvider.addListener(_onMarketChanged);
     walletProvider.addListener(_onWalletChanged);
   }
 
@@ -36,12 +37,23 @@ class TradeProvider extends ChangeNotifier {
 
     _isInitialized = true;
     print('TradeProvider: Initialization complete'); // Debug log
-    debugPrintState(); // Print trade state
+  }
+
+  void _onMarketChanged() {
+    final stillExists =
+        marketProvider.allCoins.any((coin) => coin.id == _selectedCoinId);
+    if (!stillExists) {
+      if (marketProvider.allCoins.isNotEmpty) {
+        selectCoin(marketProvider.allCoins.first);
+      }
+    }
+    notifyListeners();
   }
 
   @override
   void dispose() {
     print('TradeProvider: Disposing...'); // Debug log
+    marketProvider.removeListener(_onMarketChanged);
     walletProvider.removeListener(_onWalletChanged);
     _isInitialized = false;
     super.dispose();
@@ -85,7 +97,8 @@ class TradeProvider extends ChangeNotifier {
   // Initialize trading
   Future<void> _initializeTrading() async {
     print('TradeProvider: Initializing trading...'); // Debug log
-    if (marketProvider.allCoins.isNotEmpty) {
+    // Hanya set default jika belum ada pilihan
+    if (_selectedCoinId.isEmpty && marketProvider.allCoins.isNotEmpty) {
       selectCoin(marketProvider.allCoins.first);
     }
   }
@@ -174,19 +187,6 @@ class TradeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Debug method to print current state
-  void debugPrintState() {
-    print('TradeProvider Debug State:');
-    print('Initialized: $_isInitialized');
-    print('Selected Coin: $_selectedCoinSymbol (ID: $_selectedCoinId)');
-    print('Trade Mode: $_currentMode');
-    print('IDR Balance: ${idrBalance}'); // Using getter
-    print('Crypto Balance: ${cryptoBalance}'); // Using getter
-    print('Is Loading: $_isLoading');
-    print('Error: $_error');
-  }
-
-  // Wallet change listener to notify UI
   void _onWalletChanged() {
     final idr = walletProvider.getBalance('IDR');
     final crypto = walletProvider.getBalance(_selectedCoinSymbol);

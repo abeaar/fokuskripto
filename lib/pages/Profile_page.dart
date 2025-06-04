@@ -7,9 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
-import '../widgets/profile_info_header.dart';
-import '../widgets/profile_info_card.dart';
-import '../widgets/kesan_pesan_section.dart';
+import '../widgets/profile/profile_info_header.dart';
+import '../widgets/profile/profile_info_card.dart';
+import '../widgets/profile/kesan_pesan_section.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

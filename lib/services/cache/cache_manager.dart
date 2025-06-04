@@ -6,9 +6,7 @@ import 'dart:io';
 class CacheException implements Exception {
   final String message;
   final dynamic data;
-
   CacheException(this.message, {this.data});
-
   @override
   String toString() => 'CacheException: $message';
 }
@@ -18,12 +16,9 @@ class CacheManager {
   late Box _box;
   final String boxName;
   bool _isInitialized = false;
-
   CacheManager({required this.boxName});
-
   Future<void> init() async {
     if (_isInitialized) return;
-
     final directory = await getApplicationDocumentsDirectory();
     Hive.init(directory.path);
     _box = await Hive.openBox(boxName);
@@ -49,28 +44,22 @@ class CacheManager {
 
   Future<T?> get<T>(String key) async {
     await _ensureInitialized();
-
     final data = _box.get(key);
     if (data == null) return null;
-
     if (boxName.contains('ttl')) {
       return data as T;
     }
-
     final cacheData = json.decode(data);
     final expiryTime = DateTime.parse(cacheData['expiryTime']);
-
     if (DateTime.now().isAfter(expiryTime)) {
       await _box.delete(key);
       return null;
     }
-
     return cacheData['data'] as T;
   }
 
   Future<void> set(String key, dynamic data, {Duration? expiration}) async {
     await _ensureInitialized();
-
     if (boxName.contains('ttl')) {
       await _box.put(key, data);
       return;

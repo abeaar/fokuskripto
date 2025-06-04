@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../model/coinGecko.dart';
 import '../services/providers/market_provider.dart';
-import '../widgets/market_coin_item.dart';
+import '../widgets/market/market_coin_item.dart';
 
 class MarketTab extends StatelessWidget {
   const MarketTab({super.key});
@@ -70,46 +70,20 @@ class MarketTab extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 33.0,
+              horizontal: 26.0,
               vertical: 10.0,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    'Name',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    '24H Chg',
-                    textAlign: TextAlign.end,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 4,
-                  child: Text(
-                    'Price / Vol 24H',
-                    textAlign: TextAlign.end,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-              ],
+            child: Consumer<MarketProvider>(
+              builder: (context, marketProvider, _) => Row(
+                children: [
+                  _buildSortHeader(context, marketProvider, 'Name', 'name', 3,
+                      MainAxisAlignment.start),
+                  _buildSortHeader(context, marketProvider, '24H Chg',
+                      'price_change_24h', 3, MainAxisAlignment.center),
+                  _buildSortHeader(context, marketProvider, 'Price / Vol 24H',
+                      'current_price', 4, MainAxisAlignment.end),
+                ],
+              ),
             ),
           ),
           Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
@@ -131,6 +105,46 @@ class MarketTab extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSortHeader(
+    BuildContext context,
+    MarketProvider provider,
+    String title,
+    String field,
+    int flex,
+    MainAxisAlignment alignment,
+  ) {
+    final isActive = provider.currentSortField == field;
+    return Expanded(
+      flex: flex,
+      child: InkWell(
+        onTap: () => provider.sortBy(field),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: alignment,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  color: isActive ? Colors.green[700] : Colors.grey[700],
+                ),
+              ),
+              if (isActive)
+                Icon(
+                  provider.isAscendingSort
+                      ? Icons.arrow_drop_up
+                      : Icons.arrow_drop_down,
+                  color: Colors.green[700],
+                  size: 20,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

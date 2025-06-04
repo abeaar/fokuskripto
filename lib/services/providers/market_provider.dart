@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../model/coinGecko.dart';
-import '../api/market_service.dart';
+import '../../services/api/coin_gecko_api.dart';
 
 class MarketProvider extends ChangeNotifier {
-  final MarketService _marketService = MarketService();
+  final CoinGeckoApi _api = CoinGeckoApi();
+
   Timer? _refreshTimer;
 
   bool _isLoading = false;
   String? _error;
   List<CoinGeckoMarketModel> _allCoins = [];
+  String _sortField = 'market_cap_rank';
+  bool _isAscending = true;
   DateTime? _lastUpdated;
   static const int _refreshIntervalSeconds = 10;
   static const int _forceRefreshIntervalMinutes = 1;
@@ -53,16 +56,15 @@ class MarketProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
     }
-
     try {
-      final coins = await _marketService.fetchCoinMarkets(
+      final coins = await _api.getMarkets(
         vsCurrency: 'idr',
         perPage: 100,
         page: 1,
         forceRefresh: forceRefresh,
       );
 
-      _allCoins = coins;
+      _allCoins = _applySorting(coins);
       _lastUpdated = DateTime.now();
       _error = null;
     } catch (e) {
@@ -81,9 +83,50 @@ class MarketProvider extends ChangeNotifier {
     }
   }
 
+  // Sorting methods
+  void sortBy(String field) {
+    if (_sortField == field) {
+      _isAscending = !_isAscending;
+    } else {
+      _sortField = field;
+      _isAscending = true;
+    }
+    _allCoins = _applySorting(_allCoins);
+    notifyListeners();
+  }
+
+  List<CoinGeckoMarketModel> _applySorting(List<CoinGeckoMarketModel> coins) {
+    return [...coins]..sort((a, b) {
+        int compareResult;
+        switch (_sortField) {
+          case 'name':
+            compareResult = a.name.compareTo(b.name);
+            break;
+          case 'price_change_24h':
+            compareResult = (a.priceChangePercentage24h ?? 0.0)
+                .compareTo(b.priceChangePercentage24h ?? 0.0);
+            break;
+          case 'current_price':
+            compareResult = a.currentPrice.compareTo(b.currentPrice);
+            break;
+          case 'total_volume':
+            compareResult =
+                (a.totalVolume ?? 0.0).compareTo(b.totalVolume ?? 0.0);
+            break;
+          default: // default sort by market cap rank
+            compareResult =
+                (a.marketCapRank ?? 0).compareTo(b.marketCapRank ?? 0);
+        }
+        return _isAscending ? compareResult : -compareResult;
+      });
+  }
+
+  String get currentSortField => _sortField;
+  bool get isAscendingSort => _isAscending;
+
   Future<CoinGeckoMarketModel?> refreshCoinById(String id) async {
     try {
-      final coins = await _marketService.fetchCoinMarkets(
+      final coins = await _api.getMarkets(
         vsCurrency: 'idr',
         ids: id,
         forceRefresh: true,
