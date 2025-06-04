@@ -3,12 +3,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:fokuskripto/services/notification_service.dart';
 import 'package:fokuskripto/services/providers/market_provider.dart';
+import 'package:fokuskripto/services/providers/trade_provider.dart';
+import 'package:fokuskripto/services/providers/wallet_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'model/coinGecko.dart';
 import 'pages/LoginPage.dart';
 import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
+import 'pages/SplashScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,11 +41,26 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => MarketProvider()),
+        ChangeNotifierProvider(create: (_) => WalletProvider()),
+        ChangeNotifierProxyProvider2<MarketProvider, WalletProvider,
+            TradeProvider>(
+          create: (context) => TradeProvider(
+            marketProvider: context.read<MarketProvider>(),
+            walletProvider: context.read<WalletProvider>(),
+          ),
+          update: (context, marketProvider, walletProvider,
+                  previousTradeProvider) =>
+              TradeProvider(
+            marketProvider: marketProvider,
+            walletProvider: walletProvider,
+          ),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        initialRoute: '/login_page',
+        initialRoute: '/splash',
         routes: {
+          '/splash': (context) => const SplashScreen(),
           '/login_page': (context) => LoginPage(),
           '/register_page': (context) => RegisterPage(),
           '/home_page': (context) => HomePage(),

@@ -1,80 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../model/coinGecko.dart';
-import '../services/api_gecko.dart';
-import '../services/base_network.dart'; // Untuk NetworkException
+import '../services/providers/market_provider.dart';
 import '../widgets/market_coin_item.dart';
 
-
-class MarketTab extends StatefulWidget {
+class MarketTab extends StatelessWidget {
   const MarketTab({super.key});
 
-  @override
-  State<MarketTab> createState() => _MarketTabState();
-}
-
-class _MarketTabState extends State<MarketTab> {
-  final ApiServiceGecko _apiServiceGecko = ApiServiceGecko();
-  bool _isLoading = true;
-  String? _error;
-  List<CoinGeckoMarketModel> _marketCoins = [];
-
   // Formatter untuk harga dan volume
-  final NumberFormat _priceFormatter = NumberFormat.currency(
+  static final NumberFormat _priceFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 0,
   );
-  final NumberFormat _volumeFormatter = NumberFormat.compactCurrency(
+  static final NumberFormat _volumeFormatter = NumberFormat.compactCurrency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 2,
   );
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchMarketData();
-  }
-
-  Future<void> _fetchMarketData() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      // Ambil data dari CoinGecko, default vs_currency='idr', per_page=100
-      final fetchedCoins = await _apiServiceGecko.fetchCoinMarkets(
-        vsCurrency: 'idr',
-        perPage: 100,
-      );
-      if (!mounted) return;
-      setState(() {
-        _marketCoins = fetchedCoins;
-        _isLoading = false;
-      });
-    } on NetworkException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.message;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Terjadi kesalahan tidak terduga: ${e.toString()}';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Widget _buildMarketContent() {
-    if (_isLoading) {
+  Widget _buildMarketContent(BuildContext context, MarketProvider marketData) {
+    if (marketData.isLoading && marketData.allCoins.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_error != null) {
+
+    if (marketData.error != null && marketData.allCoins.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -82,13 +33,13 @@ class _MarketTabState extends State<MarketTab> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                _error!,
+                marketData.error!,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.red[700]),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _fetchMarketData,
+                onPressed: () => marketData.fetchData(),
                 child: const Text('Coba Lagi'),
               ),
             ],
@@ -96,7 +47,8 @@ class _MarketTabState extends State<MarketTab> {
         ),
       );
     }
-    if (_marketCoins.isEmpty) {
+
+    if (marketData.allCoins.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -104,15 +56,16 @@ class _MarketTabState extends State<MarketTab> {
             const Text('Tidak ada data pasar koin.'),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _fetchMarketData,
+              onPressed: () => marketData.fetchData(),
               child: const Text('Muat Ulang'),
             ),
           ],
         ),
       );
     }
+
     return RefreshIndicator(
-      onRefresh: _fetchMarketData,
+      onRefresh: () => marketData.fetchData(),
       child: Column(
         children: [
           Padding(
@@ -160,12 +113,17 @@ class _MarketTabState extends State<MarketTab> {
             ),
           ),
           Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
+          if (marketData.isLoading)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
           Expanded(
             child: ListView.builder(
-              itemCount: _marketCoins.length,
+              itemCount: marketData.allCoins.length,
               itemBuilder: (context, index) {
                 return MarketCoinListItem(
-                  coin: _marketCoins[index],
+                  coin: marketData.allCoins[index],
                   priceFormatter: _priceFormatter,
                   volumeFormatter: _volumeFormatter,
                 );
@@ -179,6 +137,9 @@ class _MarketTabState extends State<MarketTab> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildMarketContent();
+    return Consumer<MarketProvider>(
+      builder: (context, marketData, _) =>
+          _buildMarketContent(context, marketData),
+    );
   }
 }

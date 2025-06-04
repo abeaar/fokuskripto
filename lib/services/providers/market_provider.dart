@@ -11,6 +11,8 @@ class MarketProvider extends ChangeNotifier {
   String? _error;
   List<CoinGeckoMarketModel> _allCoins = [];
   DateTime? _lastUpdated;
+  static const int _refreshIntervalSeconds = 60;
+  static const int _forceRefreshIntervalMinutes = 1;
 
   // Getters
   bool get isLoading => _isLoading;
@@ -22,16 +24,31 @@ class MarketProvider extends ChangeNotifier {
   DateTime? get lastUpdated => _lastUpdated;
 
   MarketProvider() {
-    // Initial fetch
     fetchData();
-
-    // Set up auto refresh every 30 seconds
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      fetchData(silent: true);
+    _refreshTimer =
+        Timer.periodic(const Duration(seconds: _refreshIntervalSeconds), (_) {
+      _checkAndFetchData();
     });
   }
 
-  Future<void> fetchData({bool silent = false}) async {
+  void _checkAndFetchData() {
+    if (_lastUpdated == null) {
+      fetchData(silent: true);
+      return;
+    }
+
+    final timeSinceLastUpdate = DateTime.now().difference(_lastUpdated!);
+    if (timeSinceLastUpdate.inMinutes >= _forceRefreshIntervalMinutes) {
+      // Hanya force refresh jika data lebih lama dari interval cache
+      fetchData(silent: true, forceRefresh: true);
+    } else {
+      // Gunakan cache jika data masih fresh
+      fetchData(silent: true, forceRefresh: false);
+    }
+  }
+
+  Future<void> fetchData(
+      {bool silent = false, bool forceRefresh = false}) async {
     if (!silent) {
       _isLoading = true;
       notifyListeners();
@@ -42,7 +59,7 @@ class MarketProvider extends ChangeNotifier {
         vsCurrency: 'idr',
         perPage: 100,
         page: 1,
-        forceRefresh: !silent,
+        forceRefresh: forceRefresh,
       );
 
       _allCoins = coins;
