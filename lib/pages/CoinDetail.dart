@@ -4,11 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/base_network.dart';
 
-// Sesuaikan path import model dan service Anda
 import '../model/coinGecko_detail.dart';
 import '../services/api_gecko.dart';
-// import '../services/trade_service.dart'; // Tidak kita gunakan dulu untuk navigasi
-// import 'home_page.dart'; // Tidak kita gunakan dulu untuk navigasi
 
 class CoinDetailPage extends StatefulWidget {
   final String coinId;
@@ -72,33 +69,26 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
         "CoinDetailPage: Fetching ALL data for ${widget.coinId}, force: $force",
       );
 
-      // Fetch Detail Data
       _coinDetail = await _apiService.fetchCoinDetail(
         widget.coinId,
-        forceRefreshUiTrigger: force, // Meneruskan 'force' ke service detail
+        forceRefreshUiTrigger: force,
       );
 
       // Fetch Chart Data (untuk 1 hari terakhir)
       final chartRawData = await _apiService.fetchCoinMarketChart(
         coinId: widget.coinId,
-        vsCurrency: 'idr', // Pastikan mata uang sesuai
-        days:
-            1, // Periode waktu yang Anda inginkan (1 = 24 jam, 7 = 7 hari, dst.)
-        forceRefresh: force, // Meneruskan 'force' ke service chart
+        vsCurrency: 'idr',
+        days: 1,
+        forceRefresh: force,
       );
 
       if (chartRawData.isNotEmpty) {
-        // Konversi data historis [timestamp, harga] menjadi FlSpot [index, harga]
-        // Kita gunakan index sebagai nilai X untuk FlSpot agar urutan benar pada grafik
-        _chartSpots =
-            chartRawData.asMap().entries.map((entry) {
-              // entry.key adalah index (0, 1, 2, ...)
-              // entry.value adalah List<double> yaitu [timestamp, price]
-              return FlSpot(
-                entry.key.toDouble(),
-                entry.value[1],
-              ); // Gunakan index sebagai X, harga sebagai Y
-            }).toList();
+        _chartSpots = chartRawData.asMap().entries.map((entry) {
+          return FlSpot(
+            entry.key.toDouble(),
+            entry.value[1],
+          );
+        }).toList();
 
         // Penting: Sort by X value untuk memastikan urutan titik yang benar pada grafik
         _chartSpots.sort((a, b) => a.x.compareTo(b.x));
@@ -109,7 +99,6 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
       }
     } catch (e) {
       if (mounted) {
-        // Tangkap NetworkException secara spesifik atau error umum lainnya
         if (e is NetworkException) {
           _error = e.message;
         } else {
@@ -183,11 +172,10 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
     if (descriptionHtml == null || descriptionHtml.isEmpty) {
       return const SizedBox.shrink();
     }
-    String plainTextDescription =
-        descriptionHtml
-            .replaceAll(RegExp(r'<[^>]*>'), ' ')
-            .replaceAll(RegExp(r'\s+'), ' ')
-            .trim();
+    String plainTextDescription = descriptionHtml
+        .replaceAll(RegExp(r'<[^>]*>'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
 
     int maxLength = 300;
     if (plainTextDescription.length > maxLength) {
@@ -226,12 +214,10 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
     }
 
     // Tentukan nilai min dan max Y dari data chart asli
-    double minY = _chartSpots
-        .map((spot) => spot.y)
-        .reduce((a, b) => a < b ? a : b);
-    double maxY = _chartSpots
-        .map((spot) => spot.y)
-        .reduce((a, b) => a > b ? a : b);
+    double minY =
+        _chartSpots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
+    double maxY =
+        _chartSpots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
     double minX = _chartSpots.first.x;
     double maxX = _chartSpots.last.x;
     minY = minY * 0.99; // Mengurangi 1% dari nilai minimum
@@ -250,14 +236,10 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
               show: true,
               border: Border.all(color: Colors.grey.shade300, width: 1),
             ),
-            minX:
-                _chartSpots
-                    .first
-                    .x, // Sumbu X mulai dari titik pertama data asli
-            maxX:
-                _chartSpots
-                    .last
-                    .x, // Sumbu X berakhir di titik terakhir data asli
+            minX: _chartSpots
+                .first.x, // Sumbu X mulai dari titik pertama data asli
+            maxX: _chartSpots
+                .last.x, // Sumbu X berakhir di titik terakhir data asli
             minY: minY,
             maxY: maxY,
             lineBarsData: [
@@ -295,7 +277,6 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    // Judul AppBar dinamis berdasarkan data yang ada
     String appBarTitle = _coinDetail?.name ?? widget.coinName ?? widget.coinId;
     if (_coinDetail?.symbol != null) {
       appBarTitle =
@@ -304,7 +285,6 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
       appBarTitle =
           "${widget.coinName ?? widget.coinId} (${widget.coinSymbol!.toUpperCase()})";
     }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(appBarTitle),
@@ -315,160 +295,157 @@ class _CoinDetailPageState extends State<CoinDetailPage> {
           fontFamily: 'Roboto',
         ),
       ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
               ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Gagal memuat detail: $_error",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.red[700]),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.refresh),
-                        label: const Text("Coba Lagi"),
-                        // Panggil dengan force: false agar memeriksa cache saat 'Coba Lagi'
-                        onPressed: () => _fetchPageData(force: false),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-              : _coinDetail == null
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Data detail koin tidak ditemukan."),
-                    const SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.refresh),
-                      label: const Text("Coba Lagi"),
-                      // Panggil dengan force: false agar memeriksa cache saat 'Coba Lagi'
-                      onPressed: () => _fetchPageData(force: false),
-                    ),
-                  ],
-                ),
-              )
-              : RefreshIndicator(
-                // PENTING: Mengubah force: true menjadi force: false di sini
-                // Agar pull-to-refresh juga memeriksa cache terlebih dahulu.
-                onRefresh: () => _fetchPageData(force: false),
-                child: ListView(
-                  padding: const EdgeInsets.all(16.0),
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                              ),
-                              const SizedBox(height: 0),
-                              Text(
-                                _priceFormatter
-                                    .format(_coinDetail!.currentPriceIdr)
-                                    .replaceAll('Rp ', ''),
-                                style: theme.textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 33,
-                                ),
-                              ),
-                              if (_coinDetail!.priceChangePercentage24h != null)
-                                Text(
-                                  "${_coinDetail!.priceChangePercentage24h! >= 0 ? '+' : ''}${_percentageFormatter.format(_coinDetail!.priceChangePercentage24h)}%",
-                                  style: TextStyle(
-                                    color:
-                                        (_coinDetail!
-                                                    .priceChangePercentage24h! >=
-                                                0)
-                                            ? Colors.green[700]
-                                            : Colors.red[700],
-                                    fontSize: 23, // Ukuran
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                            ],
-                          ),
+                        Text(
+                          "Gagal memuat detail: $_error",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.red[700]),
                         ),
-                        const SizedBox(
-                          width: 16,
-                        ), // Jarak antara kolom kiri dan kanan
-                        Expanded(
-                          flex: 2, // Beri ruang yang cukup untuk statistik
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 2), // Jarak kecil
-                              _buildInfoRow(
-                                context,
-                                "High",
-                                _coinDetail!.high24hIdr != null
-                                    ? _priceFormatter
-                                        .format(_coinDetail!.high24hIdr!)
-                                        .replaceAll('Rp ', '')
-                                    : "-",
-                              ),
-                              _buildInfoRow(
-                                context,
-                                "Low",
-                                _coinDetail!.low24hIdr != null
-                                    ? _priceFormatter
-                                        .format(_coinDetail!.low24hIdr!)
-                                        .replaceAll('Rp ', '')
-                                    : "-",
-                              ),
-                              _buildInfoRow(
-                                context,
-                                "Vol (IDR)",
-                                _coinDetail!.totalVolumeIdr != null
-                                    ? " ${_volumeFormatter.format(_coinDetail!.totalVolumeIdr!)}"
-                                    : "-",
-                              ),
-                              _buildInfoRow(
-                                context,
-                                "Vol (${_coinDetail!.symbol.toUpperCase()})",
-                                _coinDetail!.totalVolumeBtc != null
-                                    ? "${_coinVolumeFormatter.format(_coinDetail!.totalVolumeBtc!)} ${_coinDetail!.symbol.toUpperCase()}"
-                                    : "-",
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.refresh),
+                          label: const Text("Coba Lagi"),
+                          onPressed: () => _fetchPageData(force: false),
                         ),
                       ],
                     ),
+                  ),
+                )
+              : _coinDetail == null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Data detail koin tidak ditemukan."),
+                          const SizedBox(height: 10),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.refresh),
+                            label: const Text("Coba Lagi"),
+                            onPressed: () => _fetchPageData(force: false),
+                          ),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () => _fetchPageData(force: false),
+                      child: ListView(
+                        padding: const EdgeInsets.all(16.0),
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                    ),
+                                    const SizedBox(height: 0),
+                                    Text(
+                                      _priceFormatter
+                                          .format(_coinDetail!.currentPriceIdr)
+                                          .replaceAll('Rp ', ''),
+                                      style: theme.textTheme.headlineMedium
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 33,
+                                      ),
+                                    ),
+                                    if (_coinDetail!.priceChangePercentage24h !=
+                                        null)
+                                      Text(
+                                        "${_coinDetail!.priceChangePercentage24h! >= 0 ? '+' : ''}${_percentageFormatter.format(_coinDetail!.priceChangePercentage24h)}%",
+                                        style: TextStyle(
+                                          color: (_coinDetail!
+                                                      .priceChangePercentage24h! >=
+                                                  0)
+                                              ? Colors.green[700]
+                                              : Colors.red[700],
+                                          fontSize: 23, // Ukuran
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 16,
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 2), // Jarak kecil
+                                    _buildInfoRow(
+                                      context,
+                                      "High",
+                                      _coinDetail!.high24hIdr != null
+                                          ? _priceFormatter
+                                              .format(_coinDetail!.high24hIdr!)
+                                              .replaceAll('Rp ', '')
+                                          : "-",
+                                    ),
+                                    _buildInfoRow(
+                                      context,
+                                      "Low",
+                                      _coinDetail!.low24hIdr != null
+                                          ? _priceFormatter
+                                              .format(_coinDetail!.low24hIdr!)
+                                              .replaceAll('Rp ', '')
+                                          : "-",
+                                    ),
+                                    _buildInfoRow(
+                                      context,
+                                      "Vol (IDR)",
+                                      _coinDetail!.totalVolumeIdr != null
+                                          ? " ${_volumeFormatter.format(_coinDetail!.totalVolumeIdr!)}"
+                                          : "-",
+                                    ),
+                                    _buildInfoRow(
+                                      context,
+                                      "Vol (${_coinDetail!.symbol.toUpperCase()})",
+                                      _coinDetail!.totalVolumeBtc != null
+                                          ? "${_coinVolumeFormatter.format(_coinDetail!.totalVolumeBtc!)} ${_coinDetail!.symbol.toUpperCase()}"
+                                          : "-",
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
 
-                    const SizedBox(height: 16), // Jarak sebelum grafik
-                    _buildChart(context), // Memanggil fungsi grafik Anda
-                    const SizedBox(height: 24),
+                          const SizedBox(height: 16),
+                          _buildChart(context),
+                          const SizedBox(height: 24),
 
-                    _buildDescription(context, _coinDetail!.descriptionEn),
+                          _buildDescription(
+                              context, _coinDetail!.descriptionEn),
 
-                    if (_coinDetail!.homepageUrl != null &&
-                        _coinDetail!.homepageUrl!.isNotEmpty) ...[
-                      // ... (Link Website Anda) ...
-                    ],
+                          if (_coinDetail!.homepageUrl != null &&
+                              _coinDetail!.homepageUrl!.isNotEmpty)
+                            ...[],
 
-                    const SizedBox(height: 40),
-                    // Tombol Buy & Sell
-                    Row(
-                      // ... (Tombol Buy/Sell Anda) ...
+                          const SizedBox(height: 40),
+                          // Tombol Buy & Sell
+                          Row(
+                              // ... (Tombol Buy/Sell Anda) ...
+                              ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
     );
   }
 }

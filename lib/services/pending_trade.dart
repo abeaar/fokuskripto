@@ -29,7 +29,7 @@ class PendingTradeNotifier with ChangeNotifier {
   void clear() {
     if (_pendingTrade != null) {
       _pendingTrade = null;
-      // notifyListeners(); // Hanya notify jika ada yang perlu tahu saat di-clear juga
+      // notifyListeners(); 
     }
   }
 }

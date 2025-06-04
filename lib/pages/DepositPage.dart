@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../services/notification_service.dart';
 
 class DepositPage extends StatefulWidget {
   // Terima box dari halaman sebelumnya
@@ -17,7 +18,7 @@ class _DepositPageState extends State<DepositPage> {
   final _amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _handleDeposit() {
+  void _handleDeposit() async {
     // Validasi form
     if (_formKey.currentState?.validate() ?? false) {
       // Ambil nilai dari input dan konversi ke double
@@ -43,7 +44,9 @@ class _DepositPageState extends State<DepositPage> {
       // Simpan kembali data yang sudah diperbarui ke Hive
       widget.walletBox.put('IDR', idrAsset);
 
-      // Tampilkan notifikasi sukses
+      await NotificationService().showWithdrawalSuccessNotification(
+        depositAmount,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Deposit sebesar IDR $depositAmount berhasil!'),
@@ -51,7 +54,6 @@ class _DepositPageState extends State<DepositPage> {
         ),
       );
 
-      // Kembali ke halaman wallet
       Navigator.pop(context);
     }
   }

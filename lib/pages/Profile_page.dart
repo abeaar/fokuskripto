@@ -140,17 +140,15 @@ class _ProfilePageState extends State<ProfilePage> {
       _usernameDisplay = _currentLoggedInUsername;
       _fullName =
           prefs.getString('${_currentLoggedInUsername}_$spFullNameKeySuffix') ??
-          "Belum diatur";
+              "Belum diatur";
       _email =
           prefs.getString('${_currentLoggedInUsername}_$spEmailKeySuffix') ??
-          "Belum diatur";
-      _phoneNumber =
-          prefs.getString(
+              "Belum diatur";
+      _phoneNumber = prefs.getString(
             '${_currentLoggedInUsername}_$spPhoneNumberKeySuffix',
           ) ??
           "Belum diatur";
-      _kesanPesan =
-          prefs.getString(
+      _kesanPesan = prefs.getString(
             '${_currentLoggedInUsername}_$spKesanPesanKeySuffix',
           ) ??
           "Belum ada kesan dan pesan.";
@@ -427,157 +425,130 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    ProfileHeaderSection(
-                      profileImagePath: _profileImagePath,
-                      usernameDisplay: _usernameDisplay, // atau _fullName
-                      onPickImage: _pickAndSaveImage,
-                    ),
-                    const SizedBox(height: 30),
-
-                    ProfileInfoCard(
-                      title: "Informasi Akun",
-                      infoRows: [
-                        _buildProfileInfoRow(
-                          "Nama Lengkap",
-                          _fullName,
-                          onAction:
-                              () => _showEditDialog(
-                                fieldKeySuffix: spFullNameKeySuffix,
-                                dialogTitle: "Nama Lengkap",
-                                initialValue:
-                                    _fullName == "Belum diatur"
-                                        ? ""
-                                        : _fullName,
-                                onSave:
-                                    (val) => setState(
-                                      () =>
-                                          _fullName =
-                                              val.isNotEmpty
-                                                  ? val
-                                                  : "Belum diatur",
-                                    ),
-                              ),
-                          actionIcon: Icons.edit_outlined,
-                        ),
-                        _buildProfileInfoRow(
-                          "Username",
-                          _usernameDisplay,
-                        ), // Tanpa aksi edit
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    ProfileInfoCard(
-                      title: "Informasi Pribadi",
-                      infoRows: [
-                        _buildProfileInfoRow(
-                          "Email",
-                          _email,
-                          onAction:
-                              () => _showEditDialog(
-                                fieldKeySuffix: spEmailKeySuffix,
-                                dialogTitle: "Email",
-                                initialValue:
-                                    _email == "Belum diatur" ? "" : _email,
-                                onSave:
-                                    (val) => setState(
-                                      () =>
-                                          _email =
-                                              val.isNotEmpty
-                                                  ? val
-                                                  : "Belum diatur",
-                                    ),
-                              ),
-                          actionIcon: Icons.edit_outlined,
-                        ),
-                        _buildProfileInfoRow(
-                          "Nomor Telepon",
-                          _phoneNumber,
-                          onAction:
-                              () => _showEditDialog(
-                                fieldKeySuffix: spPhoneNumberKeySuffix,
-                                dialogTitle: "Nomor Telepon",
-                                initialValue:
-                                    _phoneNumber == "Belum diatur"
-                                        ? ""
-                                        : _phoneNumber,
-                                onSave:
-                                    (val) => setState(
-                                      () =>
-                                          _phoneNumber =
-                                              val.isNotEmpty
-                                                  ? val
-                                                  : "Belum diatur",
-                                    ),
-                              ),
-                          actionIcon: Icons.edit_outlined,
-                        ),
-                        _buildProfileInfoRow(
-                          "Lokasi Saat Ini",
-                          _isFetchingLocation
-                              ? "Memuat lokasi..."
-                              : _locationMessage,
-                          onAction: _getCurrentLocationAndUpdateUI,
-                          actionIcon: Icons.refresh,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    KesanPesanSection(
-                      kesanPesan: _kesanPesan,
-                      onEditKesanPesan: () {
-                        _showEditDialog(
-                          fieldKeySuffix: spKesanPesanKeySuffix,
-                          dialogTitle: "Kesan dan Pesan",
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ProfileHeaderSection(
+                    profileImagePath: _profileImagePath,
+                    usernameDisplay: _usernameDisplay, // atau _fullName
+                    onPickImage: _pickAndSaveImage,
+                  ),
+                  const SizedBox(height: 30),
+                  ProfileInfoCard(
+                    title: "Informasi Akun",
+                    infoRows: [
+                      _buildProfileInfoRow(
+                        "Nama Lengkap",
+                        _fullName,
+                        onAction: () => _showEditDialog(
+                          fieldKeySuffix: spFullNameKeySuffix,
+                          dialogTitle: "Nama Lengkap",
                           initialValue:
-                              _kesanPesan == "Belum ada kesan dan pesan."
-                                  ? ""
-                                  : _kesanPesan,
-                          onSave:
-                              (newValue) => setState(
-                                () =>
-                                    _kesanPesan =
-                                        newValue.isNotEmpty
-                                            ? newValue
-                                            : "Belum ada kesan dan pesan.",
-                              ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 30),
-
-                    Center(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.logout),
-                        label: const Text("Logout"),
-                        onPressed: _handleLogout,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 30,
-                            vertical: 12,
+                              _fullName == "Belum diatur" ? "" : _fullName,
+                          onSave: (val) => setState(
+                            () => _fullName =
+                                val.isNotEmpty ? val : "Belum diatur",
                           ),
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        ),
+                        actionIcon: Icons.edit_outlined,
+                      ),
+                      _buildProfileInfoRow(
+                        "Username",
+                        _usernameDisplay,
+                      ), // Tanpa aksi edit
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ProfileInfoCard(
+                    title: "Informasi Pribadi",
+                    infoRows: [
+                      _buildProfileInfoRow(
+                        "Email",
+                        _email,
+                        onAction: () => _showEditDialog(
+                          fieldKeySuffix: spEmailKeySuffix,
+                          dialogTitle: "Email",
+                          initialValue: _email == "Belum diatur" ? "" : _email,
+                          onSave: (val) => setState(
+                            () =>
+                                _email = val.isNotEmpty ? val : "Belum diatur",
                           ),
+                        ),
+                        actionIcon: Icons.edit_outlined,
+                      ),
+                      _buildProfileInfoRow(
+                        "Nomor Telepon",
+                        _phoneNumber,
+                        onAction: () => _showEditDialog(
+                          fieldKeySuffix: spPhoneNumberKeySuffix,
+                          dialogTitle: "Nomor Telepon",
+                          initialValue: _phoneNumber == "Belum diatur"
+                              ? ""
+                              : _phoneNumber,
+                          onSave: (val) => setState(
+                            () => _phoneNumber =
+                                val.isNotEmpty ? val : "Belum diatur",
+                          ),
+                        ),
+                        actionIcon: Icons.edit_outlined,
+                      ),
+                      _buildProfileInfoRow(
+                        "Lokasi Saat Ini",
+                        _isFetchingLocation
+                            ? "Memuat lokasi..."
+                            : _locationMessage,
+                        onAction: _getCurrentLocationAndUpdateUI,
+                        actionIcon: Icons.refresh,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  KesanPesanSection(
+                    kesanPesan: _kesanPesan,
+                    onEditKesanPesan: () {
+                      _showEditDialog(
+                        fieldKeySuffix: spKesanPesanKeySuffix,
+                        dialogTitle: "Kesan dan Pesan",
+                        initialValue:
+                            _kesanPesan == "Belum ada kesan dan pesan."
+                                ? ""
+                                : _kesanPesan,
+                        onSave: (newValue) => setState(
+                          () => _kesanPesan = newValue.isNotEmpty
+                              ? newValue
+                              : "Belum ada kesan dan pesan.",
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 30),
+                  Center(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.logout),
+                      label: const Text("Logout"),
+                      onPressed: _handleLogout,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
+            ),
     );
   }
 }

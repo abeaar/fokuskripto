@@ -38,7 +38,7 @@ class ApiServiceGecko {
     String? ids,
     int perPage = 100,
     int page = 1,
-    bool forceRefreshUiTrigger = false, // Untuk memaksa pengambilan dari API
+    bool forceRefreshUiTrigger = false, 
   }) async {
     final cacheBox = await _getCacheBox();
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -89,11 +89,7 @@ class ApiServiceGecko {
             "CACHE TTL STALE: Data di Hive kadaluwarsa untuk $dataKey. Usia: ${cacheAgeMinutes.toStringAsFixed(1)} menit.",
           );
         }
-      } else {
-        print(
-          "CACHE TTL EMPTY: Timestamp (atau data) tidak ditemukan untuk $dataKey.",
-        );
-      }
+      } 
     } else {
       print("CACHE TTL: Force Refresh dari UI untuk $dataKey.");
     }
