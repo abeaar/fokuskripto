@@ -25,7 +25,6 @@ class TradeProvider extends ChangeNotifier {
   }) {
     print('TradeProvider: Initializing...'); // Debug log
     _initialize();
-    // Add wallet listener
     walletProvider.addListener(_onWalletChanged);
   }
 
@@ -56,7 +55,6 @@ class TradeProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isInitialized => _isInitialized;
 
-  // Get balances directly from wallet provider
   double get idrBalance {
     final balance = walletProvider.getBalance('IDR');
     print('TradeProvider: Getting IDR balance: $balance');

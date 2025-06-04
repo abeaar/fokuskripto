@@ -13,7 +13,8 @@ class CoinDetailProvider extends ChangeNotifier {
   String? error;
 
   CoinDetailProvider({required this.coinId}) {
-    fetchAll();
+    print('CoinDetailProvider created for $coinId');
+    fetchAll(force: true);
   }
 
   Future<void> fetchAll({bool force = false}) async {

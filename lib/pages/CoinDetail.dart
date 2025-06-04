@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../services/providers/market_provider.dart';
-import '../widgets/coin_list_item.dart';
 import '../services/providers/coin_detail_provider.dart';
 
 class CoinDetailPage extends StatelessWidget {
@@ -38,13 +36,29 @@ class CoinDetailPage extends StatelessWidget {
 
     return ChangeNotifierProvider(
       create: (_) => CoinDetailProvider(coinId: coinId),
-      child: Consumer2<CoinDetailProvider, MarketProvider>(
-        builder: (context, detailProvider, marketProvider, _) {
-          final coinMarket = marketProvider.getCoinById(coinId);
+      child: Consumer<CoinDetailProvider>(
+        builder: (context, detailProvider, _) {
           final coinDetail = detailProvider.coinDetail;
           final chartSpots = detailProvider.chartSpots;
           final isLoading = detailProvider.isLoading;
           final error = detailProvider.error;
+
+          // Semua data diambil dari coinDetail
+          final price = coinDetail?.currentPriceIdr != null
+              ? priceFormatter.format(coinDetail!.currentPriceIdr)
+              : '-';
+          final high24h = coinDetail?.high24hIdr != null
+              ? priceFormatter.format(coinDetail!.high24hIdr!)
+              : '-';
+          final low24h = coinDetail?.low24hIdr != null
+              ? priceFormatter.format(coinDetail!.low24hIdr!)
+              : '-';
+          final volume = coinDetail?.totalVolumeIdr != null
+              ? "${volumeFormatter.format(coinDetail!.totalVolumeIdr!)}"
+              : '-';
+          final volumeBtc = coinDetail?.totalVolumeBtc != null
+              ? "${coinVolumeFormatter.format(coinDetail!.totalVolumeBtc!)} ${coinDetail!.symbol.toUpperCase()}"
+              : '-';
 
           String appBarTitle = coinDetail?.name ?? coinName ?? coinId;
           if (coinDetail?.symbol != null) {
@@ -54,7 +68,7 @@ class CoinDetailPage extends StatelessWidget {
             appBarTitle =
                 "${coinName ?? coinId} (${coinSymbol!.toUpperCase()})";
           }
-
+          print('CoinDetailProvider created for $coinId');
           Widget buildChart() {
             if (chartSpots.isEmpty) {
               return const SizedBox(
@@ -264,10 +278,7 @@ class CoinDetailPage extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 0),
                                           Text(
-                                            coinMarket != null
-                                                ? priceFormatter.format(
-                                                    coinMarket.currentPrice)
-                                                : '-',
+                                            price,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .headlineMedium
@@ -304,32 +315,19 @@ class CoinDetailPage extends StatelessWidget {
                                           const SizedBox(height: 2),
                                           buildInfoRow(
                                             "High",
-                                            coinMarket?.high24h != null
-                                                ? priceFormatter
-                                                    .format(
-                                                        coinMarket!.high24h!)
-                                                    .replaceAll('Rp ', '')
-                                                : "-",
+                                            high24h,
                                           ),
                                           buildInfoRow(
                                             "Low",
-                                            coinMarket?.low24h != null
-                                                ? priceFormatter
-                                                    .format(coinMarket!.low24h!)
-                                                    .replaceAll('Rp ', '')
-                                                : "-",
+                                            low24h,
                                           ),
                                           buildInfoRow(
                                             "Vol (IDR)",
-                                            coinMarket?.totalVolume != null
-                                                ? " ${volumeFormatter.format(coinMarket!.totalVolume!)}"
-                                                : "-",
+                                            volume,
                                           ),
                                           buildInfoRow(
                                             "Vol (${coinDetail.symbol.toUpperCase()})",
-                                            coinDetail.totalVolumeBtc != null
-                                                ? "${coinVolumeFormatter.format(coinDetail.totalVolumeBtc!)} ${coinDetail.symbol.toUpperCase()}"
-                                                : "-",
+                                            volumeBtc,
                                           ),
                                         ],
                                       ),
@@ -349,19 +347,6 @@ class CoinDetailPage extends StatelessWidget {
                                     // ... (Tombol Buy/Sell Anda) ...
                                     ),
                                 const SizedBox(height: 20),
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: marketProvider.allCoins.length,
-                                  itemBuilder: (context, index) {
-                                    final coin = marketProvider.allCoins[index];
-                                    return CoinListItem(
-                                      coin: coin,
-                                      priceFormatter: priceFormatter,
-                                      // onTap: ...
-                                    );
-                                  },
-                                ),
                               ],
                             ),
                           ),

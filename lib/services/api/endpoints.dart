@@ -4,7 +4,7 @@ class CoinGeckoEndpoints {
   static String markets({
     required String vsCurrency,
     String? ids,
-    int perPage = 100,
+    int perPage = 50,
     int page = 1,
   }) {
     if (ids?.isNotEmpty ?? false) {

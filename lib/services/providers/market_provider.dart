@@ -11,7 +11,7 @@ class MarketProvider extends ChangeNotifier {
   String? _error;
   List<CoinGeckoMarketModel> _allCoins = [];
   DateTime? _lastUpdated;
-  static const int _refreshIntervalSeconds = 60;
+  static const int _refreshIntervalSeconds = 10;
   static const int _forceRefreshIntervalMinutes = 1;
 
   // Getters

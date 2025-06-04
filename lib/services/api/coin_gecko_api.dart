@@ -82,7 +82,7 @@ class CoinGeckoApi {
   Future<CoinGeckoDetailModel?> getCoinDetail(
     String coinId, {
     String vsCurrency = 'idr',
-    bool forceRefresh = false,
+    bool forceRefresh = true,
   }) async {
     final cacheKey = _cache.generateKey(
       prefix: 'detail',
