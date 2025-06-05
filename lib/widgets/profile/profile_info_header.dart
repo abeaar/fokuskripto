@@ -90,8 +90,7 @@ class ProfileHeaderSection extends StatelessWidget {
           Text(
             currentTime,
             style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+              fontSize: 14,
               color: Colors.black,
               letterSpacing: 1.5,
             ),

@@ -91,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
         label = 'WIB';
     }
     final converted = nowUtc.add(Duration(hours: offset));
-    return '${DateFormat('HH:mm:ss').format(converted)} $label';
+    return '${DateFormat('HH:mm:ss').format(converted)}';
   }
 
   @override
