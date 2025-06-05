@@ -61,7 +61,6 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.person_2_outlined),
             color: Color.fromARGB(255, 59, 160, 63),
-            tooltip: 'Profil Pengguna',
             onPressed: () {
               _navigateToProfile(context);
             },

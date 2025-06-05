@@ -15,6 +15,7 @@ import '../widgets/profile/profile_info_header.dart';
 import '../widgets/profile/profile_info_card.dart';
 import '../widgets/profile/kesan_pesan_section.dart';
 import '../main.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -366,7 +367,6 @@ class _ProfilePageState extends State<ProfilePage> {
     Provider.of<WalletProvider>(context, listen: false).resetWallet();
     Provider.of<TradeProvider>(context, listen: false).dispose();
 
- 
     appKeyNotifier.value = Key(DateTime.now().toString());
 
     if (mounted) {
@@ -609,8 +609,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF1EAFE),
-        elevation: 0,
+        elevation: 10,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         leading: Navigator.canPop(context)
             ? IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -620,18 +620,20 @@ class _ProfilePageState extends State<ProfilePage> {
         title: const Text(
           'Profil Saya',
           style: TextStyle(
-            color: Colors.white,
+            color: Color.fromARGB(255, 59, 160, 63),
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.access_time, color: Colors.black),
+            icon: const Icon(Icons.access_time,
+                color: Color.fromARGB(255, 59, 160, 63)),
             tooltip: 'Pengaturan Waktu',
             onPressed: _onTimeConversionPressed,
           ),
           IconButton(
-            icon: const Icon(Icons.currency_exchange, color: Colors.black),
+            icon: const Icon(Icons.currency_exchange,
+                color: Color.fromARGB(255, 59, 160, 63)),
             tooltip: 'Pengaturan Mata Uang',
             onPressed: _onCurrencyConversionPressed,
           ),
@@ -652,15 +654,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Saldo Wallet:',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    'My Wallet:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                   ),
                   Text(
                     '${currencySymbols[_selectedCurrency]} ' +
-                        (_walletBalanceIdr * _currencyRate).toStringAsFixed(0),
+                        (_walletBalanceIdr * _currencyRate).toStringAsFixed(2),
                     style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
                       color: Colors.black,
                     ),
                   ),
