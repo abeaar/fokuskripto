@@ -61,8 +61,6 @@ class _WalletTabState extends State<WalletTab> {
     _fetchMarketData();
   }
 
-  
-
   Future<void> _fetchMarketData() async {
     if (!mounted) return;
     setState(() {
@@ -281,13 +279,12 @@ class _WalletTabState extends State<WalletTab> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  // ---- PERUBAHAN DI SINI ----
-                  // Kirim box yang sedang aktif ke DepositPage
                   builder: (context) => DepositPage(walletBox: _userWalletBox),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
+              backgroundColor: Color.fromARGB(255, 112, 190, 145),
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -320,7 +317,7 @@ class _WalletTabState extends State<WalletTab> {
             child: const Text(
               'Withdraw',
               style: TextStyle(
-                color: Colors.blue,
+                color: Color.fromARGB(255, 112, 190, 145),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
