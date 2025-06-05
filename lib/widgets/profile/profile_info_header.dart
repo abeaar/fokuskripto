@@ -5,12 +5,14 @@ class ProfileHeaderSection extends StatelessWidget {
   final String? profileImagePath;
   final String usernameDisplay; // Atau bisa juga nama lengkap
   final VoidCallback onPickImage; // Callback untuk memilih gambar
+  final String currentTime;
 
   const ProfileHeaderSection({
     super.key,
     required this.profileImagePath,
     required this.usernameDisplay, // Atau bisa tampilkan _fullName
     required this.onPickImage,
+    required this.currentTime,
   });
 
   @override
@@ -32,14 +34,12 @@ class ProfileHeaderSection extends StatelessWidget {
                       profileImagePath ?? DateTime.now().toString(),
                     ),
                     backgroundColor: Colors.grey[300],
-                    backgroundImage:
-                        profileImagePath != null &&
-                                File(profileImagePath!).existsSync()
-                            ? FileImage(File(profileImagePath!))
-                                as ImageProvider
-                            : const AssetImage(
-                              "assets/images/placeholder_profile.png",
-                            ), // Sediakan placeholder
+                    backgroundImage: profileImagePath != null &&
+                            File(profileImagePath!).existsSync()
+                        ? FileImage(File(profileImagePath!)) as ImageProvider
+                        : const AssetImage(
+                            "assets/images/placeholder_profile.png",
+                          ), // Sediakan placeholder
                   ),
                   Positioned(
                     bottom: 0,
@@ -84,6 +84,16 @@ class ProfileHeaderSection extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            currentTime,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              letterSpacing: 1.5,
             ),
           ),
         ],

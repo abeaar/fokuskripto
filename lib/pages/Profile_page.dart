@@ -6,6 +6,8 @@ import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:intl/intl.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../widgets/profile/profile_info_header.dart';
 import '../widgets/profile/profile_info_card.dart';
@@ -40,11 +42,68 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isFetchingLocation = false;
   bool _isLoading = true;
   final ImagePicker _picker = ImagePicker(); //
+  String _selectedTimeZone = 'WIB'; // default
+  String _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+  late final ticker = Stream.periodic(const Duration(seconds: 1));
+  String _selectedCurrency = 'IDR';
+  double _currencyRate = 1.0; // IDR sebagai default
+  double _walletBalanceIdr = 0.0;
+
+  Map<String, double> currencyRates = {
+    'IDR': 1.0,
+    'USD': 0.000062, // 1 IDR = 0.000062 USD (contoh, update sesuai kurs)
+    'EUR': 0.000057,
+    'GBP': 0.000049,
+  };
+  Map<String, String> currencySymbols = {
+    'IDR': 'Rp',
+    'USD': '\$',
+    'EUR': '€',
+    'GBP': '£',
+  };
+
+  String _getConvertedTime() {
+    final nowUtc = DateTime.now().toUtc();
+    int offset;
+    String label;
+    switch (_selectedTimeZone) {
+      case 'WIB':
+        offset = 7;
+        label = 'WIB';
+        break;
+      case 'WITA':
+        offset = 8;
+        label = 'WITA';
+        break;
+      case 'WIT':
+        offset = 9;
+        label = 'WIT';
+        break;
+      case 'London':
+        offset = 0;
+        label = 'London';
+        break;
+      default:
+        offset = 7;
+        label = 'WIB';
+    }
+    final converted = nowUtc.add(Duration(hours: offset));
+    return '${DateFormat('HH:mm:ss').format(converted)} $label';
+  }
+
   @override
   void initState() {
     super.initState();
     _loadAllProfileData();
     _getCurrentLocationAndUpdateUI();
+    _loadWalletBalance();
+    ticker.listen((_) {
+      if (mounted) {
+        setState(() {
+          _currentTime = _getConvertedTime();
+        });
+      }
+    });
   }
 
   Future<void> _getCurrentLocationAndUpdateUI() async {
@@ -422,9 +481,154 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _onTimeConversionPressed() {
+    final List<String> timeZones = ['WIB', 'WITA', 'WIT', 'London'];
+    showDialog(
+      context: context,
+      builder: (context) {
+        String? selectedZone = _selectedTimeZone;
+        return AlertDialog(
+          title: const Text('Pilih Zona Waktu'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: timeZones.map((zone) {
+              return RadioListTile<String>(
+                title: Text(zone),
+                value: zone,
+                groupValue: selectedZone,
+                onChanged: (value) {
+                  setState(() {
+                    selectedZone = value!;
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('Simpan'),
+              onPressed: () {
+                setState(() {
+                  _selectedTimeZone = selectedZone!;
+                  _currentTime = _getConvertedTime();
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Zona waktu diubah ke $_selectedTimeZone'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onCurrencyConversionPressed() {
+    final List<String> currencies = ['IDR', 'USD', 'EUR', 'GBP'];
+    showDialog(
+      context: context,
+      builder: (context) {
+        String? selected = _selectedCurrency;
+        return AlertDialog(
+          title: const Text('Pilih Mata Uang'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: currencies.map((cur) {
+              return RadioListTile<String>(
+                title: Text(cur),
+                value: cur,
+                groupValue: selected,
+                onChanged: (value) {
+                  setState(() {
+                    selected = value!;
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('Simpan'),
+              onPressed: () {
+                setState(() {
+                  _selectedCurrency = selected!;
+                  _currencyRate = currencyRates[_selectedCurrency]!;
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Mata uang diubah ke $_selectedCurrency'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _loadWalletBalance() async {
+    final prefs = await SharedPreferences.getInstance();
+    final username = prefs.getString(spUsernameKey) ?? '';
+    if (username.isEmpty) {
+      setState(() {
+        _walletBalanceIdr = 0;
+      });
+      return;
+    }
+    final box = await Hive.openBox('wallet_$username');
+    final idrAsset = box.get('IDR', defaultValue: {'amount': 0});
+    setState(() {
+      _walletBalanceIdr = (idrAsset['amount'] as num?)?.toDouble() ?? 0.0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF1EAFE),
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
+        title: const Text(
+          'Profil Saya',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.access_time, color: Colors.black),
+            tooltip: 'Pengaturan Waktu',
+            onPressed: _onTimeConversionPressed,
+          ),
+          IconButton(
+            icon: const Icon(Icons.currency_exchange, color: Colors.black),
+            tooltip: 'Pengaturan Mata Uang',
+            onPressed: _onCurrencyConversionPressed,
+          ),
+        ],
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -436,6 +640,21 @@ class _ProfilePageState extends State<ProfilePage> {
                     profileImagePath: _profileImagePath,
                     usernameDisplay: _usernameDisplay, // atau _fullName
                     onPickImage: _pickAndSaveImage,
+                    currentTime: _currentTime,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Saldo Wallet:',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                  ),
+                  Text(
+                    '${currencySymbols[_selectedCurrency]} ' +
+                        (_walletBalanceIdr * _currencyRate).toStringAsFixed(0),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                   const SizedBox(height: 30),
                   ProfileInfoCard(

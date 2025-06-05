@@ -32,16 +32,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Profil Saya'),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          body: const ProfilePage(),
-        ),
+        builder: (context) => const ProfilePage(),
       ),
     );
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../model/coinGecko.dart';
 import '../services/providers/market_provider.dart';
 import '../widgets/market/market_coin_item.dart';
 
