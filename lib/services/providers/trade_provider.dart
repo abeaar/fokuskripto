@@ -6,8 +6,8 @@ import 'wallet_provider.dart';
 enum TradeMode { buy, sell }
 
 class TradeProvider extends ChangeNotifier {
-   MarketProvider marketProvider;
-   WalletProvider walletProvider;
+  MarketProvider marketProvider;
+  WalletProvider walletProvider;
 
   // Trading state
   TradeMode _currentMode = TradeMode.buy;

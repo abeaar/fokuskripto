@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // IMPORT PACKAGE S
 import 'dart:convert'; // Untuk utf8.encode
 import 'package:crypto/crypto.dart'; // Untuk sha256
 import 'package:hive_flutter/hive_flutter.dart';
-
+import '../main.dart';
 import './HomePage.dart';
 
 const String spIsLoginKey = 'isLogin';
@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: Colors.green,
           ),
         );
-
+        appKeyNotifier.value = Key(DateTime.now().toString());
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),

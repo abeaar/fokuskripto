@@ -10,6 +10,14 @@ class WalletProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  void resetWallet() {
+    _username = '';
+    _balances.clear();
+    _isLoading = false;
+    _error = null;
+    notifyListeners();
+  }
+
   // Getters
   bool get isLoading => _isLoading;
   String? get error => _error;

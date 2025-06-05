@@ -61,6 +61,8 @@ class _WalletTabState extends State<WalletTab> {
     _fetchMarketData();
   }
 
+  
+
   Future<void> _fetchMarketData() async {
     if (!mounted) return;
     setState(() {

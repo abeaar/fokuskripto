@@ -13,6 +13,8 @@ import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
 import 'pages/SplashScreen.dart';
 
+final ValueNotifier<Key> appKeyNotifier = ValueNotifier(Key('initial'));
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -30,7 +32,12 @@ Future<void> main() async {
     }
   });
 
-  runApp(const MyApp());
+  runApp(
+    ValueListenableBuilder<Key>(
+      valueListenable: appKeyNotifier,
+      builder: (context, key, _) => MyApp(key: key),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

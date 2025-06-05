@@ -8,11 +8,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
+import 'package:provider/provider.dart';
+import '../services/providers/trade_provider.dart';
+import '../services/providers/wallet_provider.dart';
 import '../widgets/profile/profile_info_header.dart';
 import '../widgets/profile/profile_info_card.dart';
 import '../widgets/profile/kesan_pesan_section.dart';
-
+import '../main.dart';
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -359,7 +361,13 @@ class _ProfilePageState extends State<ProfilePage> {
     await prefs.setBool(spIsLoginKey, false);
     await prefs.remove(
       spUsernameKey,
-    ); // Menghapus siapa pengguna yang sedang aktif
+    );
+
+    Provider.of<WalletProvider>(context, listen: false).resetWallet();
+    Provider.of<TradeProvider>(context, listen: false).dispose();
+
+ 
+    appKeyNotifier.value = Key(DateTime.now().toString());
 
     if (mounted) {
       Navigator.of(
