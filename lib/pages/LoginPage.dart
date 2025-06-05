@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // IMPORT PACKAGE S
 import 'dart:convert'; // Untuk utf8.encode
 import 'package:crypto/crypto.dart'; // Untuk sha256
 import 'package:hive_flutter/hive_flutter.dart';
-
+import '../main.dart';
 import './HomePage.dart';
 
 const String spIsLoginKey = 'isLogin';
@@ -46,7 +46,6 @@ class _LoginPageState extends State<LoginPage> {
 
   checkIfAlreadyLogin() async {
     SharedPreferences loginData = await SharedPreferences.getInstance();
-    // Logika diperbaiki: jika 'isLogin' null, anggap false (belum login)
     bool isLoggedIn = loginData.getBool(spIsLoginKey) ?? false;
 
     if (isLoggedIn) {
@@ -78,12 +77,13 @@ class _LoginPageState extends State<LoginPage> {
         if (!mounted) return;
 
         var userWallet = await Hive.openBox('wallet_$inputUsername');
-        if(userWallet.isEmpty) {
+        if (userWallet.isEmpty) {
           await userWallet.put('IDR', {
             'name': 'Rupiah',
             'short_name': 'IDR',
-            'image_url': 'https://cdn-icons-png.flaticon.com/512/13893/13893854.png',
-            'amount': 100000,
+            'image_url':
+                'https://cdn-icons-png.flaticon.com/512/13893/13893854.png',
+            'amount': 0,
             'price_in_idr': 1,
           });
         }
@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: Colors.green,
           ),
         );
-
+        appKeyNotifier.value = Key(DateTime.now().toString());
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
@@ -119,21 +119,25 @@ class _LoginPageState extends State<LoginPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: SizedBox(
-            height: 330,
+            height: 600,
             child: Form(
               key: formKey,
               child: Column(
                 children: [
+                  CircleAvatar(
+                    radius: 80,
+                    backgroundColor: const Color.fromARGB(255, 59, 58, 58),
+                    child: Image.asset('assets/logo/kriptoin.png'),
+                  ),
                   Text(
-                    "Silahkan Login",
+                    "Kriptoin;",
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
+                      fontFamily: 'Courrier',
                     ),
                   ),
                   SizedBox(height: 24),
-
                   TextFormField(
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -151,7 +155,6 @@ class _LoginPageState extends State<LoginPage> {
                     maxLength: 64,
                   ),
                   SizedBox(height: 14),
-
                   TextFormField(
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -179,15 +182,12 @@ class _LoginPageState extends State<LoginPage> {
                     maxLength: 12,
                   ),
                   SizedBox(height: 14),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _login,
                       child: Text("Login", style: TextStyle(fontSize: 18)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -195,7 +195,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 10),
-
                   SizedBox(
                     width: double.infinity,
                     child: Center(
@@ -211,15 +210,14 @@ class _LoginPageState extends State<LoginPage> {
                                 decoration: TextDecoration.underline,
                                 fontSize: 16,
                               ),
-                              recognizer:
-                                  TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Navigator.pushNamedAndRemoveUntil(
-                                        context,
-                                        '/register_page',
-                                        (route) => true,
-                                      );
-                                    },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    '/register_page',
+                                    (route) => true,
+                                  );
+                                },
                             ),
                           ],
                         ),
