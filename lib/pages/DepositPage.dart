@@ -103,7 +103,7 @@ class _DepositPageState extends State<DepositPage> {
               ElevatedButton(
                 onPressed: _handleDeposit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Color.fromARGB(255, 112, 190, 145),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),

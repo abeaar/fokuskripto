@@ -20,7 +20,7 @@ class TradeModeButtons extends StatelessWidget {
             onPressed: () => tradeProvider.setTradeMode(TradeMode.buy),
             style: ElevatedButton.styleFrom(
               backgroundColor: tradeProvider.currentMode == TradeMode.buy
-                  ? Colors.green
+                  ? const Color.fromARGB(255, 112, 190, 145)
                   : Colors.grey,
             ),
             child: const Text('Beli'),

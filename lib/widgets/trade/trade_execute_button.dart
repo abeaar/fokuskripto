@@ -14,13 +14,14 @@ class TradeExecuteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tradeProvider = context.read<TradeProvider>();
-    
+
     return ElevatedButton(
       onPressed: () async {
         try {
           final amount = double.tryParse(
                 amountController.text.replaceAll(',', '.'),
-              ) ?? 0;
+              ) ??
+              0;
           await tradeProvider.executeTrade(amount);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -43,16 +44,13 @@ class TradeExecuteButton extends StatelessWidget {
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: tradeProvider.currentMode == TradeMode.buy
-            ? Colors.green
+            ? Color.fromARGB(255, 112, 190, 145)
             : Colors.red,
         padding: const EdgeInsets.symmetric(vertical: 16),
       ),
       child: Text(
         tradeProvider.currentMode == TradeMode.buy ? 'BELI' : 'JUAL',
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold
-        ),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }

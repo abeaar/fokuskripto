@@ -31,7 +31,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
     _currentIdrBalanceForMax = (idrAsset['amount'] as num?)?.toDouble() ?? 0.0;
   }
 
-Future<void> _handleWithdraw() async {
+  Future<void> _handleWithdraw() async {
     if (_formKey.currentState?.validate() ?? false) {
       final double withdrawAmount =
           double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
@@ -166,7 +166,7 @@ Future<void> _handleWithdraw() async {
               ElevatedButton(
                 onPressed: _handleWithdraw,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Color.fromARGB(255, 112, 190, 145),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
