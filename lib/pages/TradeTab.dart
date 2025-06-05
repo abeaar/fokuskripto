@@ -6,7 +6,6 @@ import '../services/providers/market_provider.dart';
 import '../services/providers/trade_provider.dart';
 import '../services/providers/wallet_provider.dart';
 import '../widgets/trade/percentage_buttons.dart';
-import '../widgets/trade/trade_balance_info.dart';
 import '../widgets/trade/trade_coin_dropdown.dart';
 import '../widgets/trade/trade_execute_button.dart';
 import '../widgets/trade/trade_input_form.dart';
@@ -103,67 +102,16 @@ class _TradeTabState extends State<TradeTab> {
                 tradeProvider: tradeProvider,
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () =>
-                          tradeProvider.setTradeMode(TradeMode.buy),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            tradeProvider.currentMode == TradeMode.buy
-                                ? Colors.green
-                                : Colors.grey,
-                      ),
-                      child: const Text('Beli'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () =>
-                          tradeProvider.setTradeMode(TradeMode.sell),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            tradeProvider.currentMode == TradeMode.sell
-                                ? Colors.red
-                                : Colors.grey,
-                      ),
-                      child: const Text('Jual'),
-                    ),
-                  ),
-                ],
-              ),
+              // Trade Mode Buttons
+              TradeModeButtons(tradeProvider: tradeProvider),
               const SizedBox(height: 16),
               // Price Info
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Harga Saat Ini:',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _priceFormatter.format(tradeProvider.currentPrice),
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: Colors.green[700],
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
-                  ],
-                ),
+              TradePriceInfo(
+                priceFormatter: _priceFormatter,
+                currentPrice: tradeProvider.currentPrice,
               ),
               const SizedBox(height: 16),
 
-              // Balance Info
               ValueListenableBuilder(
                 valueListenable: Hive.box(
                         'wallet_${context.read<WalletProvider>().username}')
@@ -255,87 +203,12 @@ class _TradeTabState extends State<TradeTab> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Amount Input
-                      TextFormField(
-                        controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        decoration: InputDecoration(
-                          labelText:
-                              'Jumlah ${tradeProvider.selectedCoinSymbol}',
-                          suffixText: tradeProvider.selectedCoinSymbol,
-                        ),
-                        onChanged: (value) {
-                          final amount =
-                              double.tryParse(value.replaceAll(',', '.')) ?? 0;
-                          _totalController.text =
-                              (amount * tradeProvider.currentPrice)
-                                  .round()
-                                  .toString();
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Total IDR Input
-                      TextFormField(
-                        controller: _totalController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Total IDR',
-                          prefixText: 'Rp ',
-                        ),
-                        onChanged: (value) {
-                          final total = double.tryParse(value) ?? 0;
-                          if (tradeProvider.currentPrice > 0) {
-                            _amountController.text = _cryptoAmountFormatter
-                                .format(total / tradeProvider.currentPrice);
-                          }
-                        },
-                      ),
+                      TradeInputForm(
+                          amountController: _amountController,
+                          totalController: _totalController,
+                          cryptoFormatter: _cryptoAmountFormatter),
                       const SizedBox(height: 24),
-
-                      ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            final amount = double.tryParse(
-                                  _amountController.text.replaceAll(',', '.'),
-                                ) ??
-                                0;
-                            await tradeProvider.executeTrade(amount);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Transaksi berhasil!'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(e.toString()),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              tradeProvider.currentMode == TradeMode.buy
-                                  ? Colors.green
-                                  : Colors.red,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: Text(
-                          tradeProvider.currentMode == TradeMode.buy
-                              ? 'BELI'
-                              : 'JUAL',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      TradeExecuteButton(amountController: _amountController),
                     ],
                   );
                 },

@@ -14,7 +14,7 @@ import 'pages/HomePage.dart';
 import 'pages/SplashScreen.dart';
 
 final ValueNotifier<Key> appKeyNotifier = ValueNotifier(Key('initial'));
-
+  
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
