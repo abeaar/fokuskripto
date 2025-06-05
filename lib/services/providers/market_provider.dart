@@ -14,8 +14,8 @@ class MarketProvider extends ChangeNotifier {
   DateTime? _lastUpdated;
   String _sortField = 'market_cap_rank';
   bool _isAscending = true;
-  static const int _refreshIntervalSeconds = 10;
-  static const int _forceRefreshIntervalMinutes = 60;
+  static const int _refreshIntervalSeconds = 300;
+  static const int _forceRefreshIntervalMinutes = 10;
 
   // Getters
   bool get isLoading => _isLoading;

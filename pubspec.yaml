@@ -38,6 +38,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo/kriptoin.png
+    - assets/logo/kriptoin.png
 
 flutter_launcher_icons:
   android: true
