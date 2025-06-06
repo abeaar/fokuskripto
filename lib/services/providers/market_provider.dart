@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../model/coinGecko.dart';
 import '../../services/api/coin_gecko_api.dart';
+import '../../services/notification_service.dart';
 
 class MarketProvider extends ChangeNotifier {
   final CoinGeckoApi _api = CoinGeckoApi();
@@ -74,6 +75,8 @@ class MarketProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+      // Tampilkan notifikasi lokal setiap fetch selesai
+      await NotificationService().showMarketUpdateNotification();
     }
   }
 
