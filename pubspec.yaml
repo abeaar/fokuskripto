@@ -24,6 +24,8 @@ dependencies:
   geolocator: ^14.0.1
   geocoding: ^4.0.0
   fl_chart: ^0.68.0
+  sensors_plus: ^3.0.0
+  local_auth: ^2.1.8
 
 dev_dependencies:
   flutter_test:

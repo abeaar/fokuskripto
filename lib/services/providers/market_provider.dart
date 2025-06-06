@@ -14,7 +14,7 @@ class MarketProvider extends ChangeNotifier {
   DateTime? _lastUpdated;
   String _sortField = 'market_cap_rank';
   bool _isAscending = true;
-  static const int _refreshIntervalSeconds = 300;
+  static const int _refreshIntervalSeconds = 30;
   static const int _forceRefreshIntervalMinutes = 10;
 
   // Getters
@@ -66,6 +66,7 @@ class MarketProvider extends ChangeNotifier {
       );
 
       _allCoins = coins;
+
       _lastUpdated = DateTime.now();
       _error = null;
     } catch (e) {
@@ -144,6 +145,11 @@ class MarketProvider extends ChangeNotifier {
       print('Error refreshing coin $id: $e');
     }
     return null;
+  }
+
+  void shuffleCoins() {
+    _allCoins.shuffle();
+    notifyListeners();
   }
 
   @override
