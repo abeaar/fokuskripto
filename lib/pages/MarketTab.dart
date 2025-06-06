@@ -3,9 +3,47 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/providers/market_provider.dart';
 import '../widgets/market/market_coin_item.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'dart:async';
+import 'dart:math';
 
-class MarketTab extends StatelessWidget {
+class MarketTab extends StatefulWidget {
   const MarketTab({super.key});
+
+  @override
+  State<MarketTab> createState() => _MarketTabState();
+}
+
+class _MarketTabState extends State<MarketTab> {
+  StreamSubscription? _accelSub;
+  double _shakeThreshold = 15.0;
+  DateTime? _lastShakeTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _accelSub = accelerometerEvents.listen((event) {
+      double acceleration =
+          sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
+      if (acceleration > _shakeThreshold) {
+        if (_lastShakeTime == null ||
+            DateTime.now().difference(_lastShakeTime!) > Duration(seconds: 1)) {
+          _lastShakeTime = DateTime.now();
+          final marketProvider = context.read<MarketProvider>();
+          marketProvider.shuffleCoins();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Urutan koin diacak (shake)!')),
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _accelSub?.cancel();
+    super.dispose();
+  }
 
   // Formatter untuk harga dan volume
   static final NumberFormat _priceFormatter = NumberFormat.currency(
