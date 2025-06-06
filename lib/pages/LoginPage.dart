@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart'; // Untuk sha256
 import 'package:hive_flutter/hive_flutter.dart';
 import '../main.dart';
 import './HomePage.dart';
+import 'package:local_auth/local_auth.dart';
 
 const String spIsLoginKey = 'isLogin';
 const String spUsernameKey = 'username';
@@ -30,11 +31,14 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isObscure = true;
   late bool newUser;
+  bool _showFingerprint = false;
+  String? _savedUsername;
 
   @override
   void initState() {
     super.initState();
     checkIfAlreadyLogin();
+    _checkIfShowFingerprint();
   }
 
   @override
@@ -58,6 +62,41 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _checkIfShowFingerprint() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool(spIsLoginKey) ?? false;
+    final username = prefs.getString(spUsernameKey);
+    if (isLoggedIn && username != null) {
+      setState(() {
+        _showFingerprint = true;
+        _savedUsername = username;
+      });
+    }
+  }
+
+  Future<void> _fingerprintLogin() async {
+    final LocalAuthentication auth = LocalAuthentication();
+    try {
+      bool didAuthenticate = await auth.authenticate(
+        localizedReason: 'Gunakan sidik jari untuk akses cepat',
+        options:
+            const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
+      );
+      if (didAuthenticate && _savedUsername != null) {
+        // Update lastActiveTime
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt(
+            'lastActiveTime', DateTime.now().millisecondsSinceEpoch);
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/home_page');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Fingerprint gagal: $e')),
+      );
+    }
+  }
+
   Future<void> _login() async {
     if (formKey.currentState!.validate()) {
       SharedPreferences loginData = await SharedPreferences.getInstance();
@@ -72,8 +111,9 @@ class _LoginPageState extends State<LoginPage> {
       if (storedHashedPassword != null &&
           storedHashedPassword == hashedInputPassword) {
         await loginData.setBool(spIsLoginKey, true);
-        // Simpan username yang sedang aktif untuk digunakan di ProfilePage dll.
         await loginData.setString(spUsernameKey, inputUsername);
+        await loginData.setInt(
+            'lastActiveTime', DateTime.now().millisecondsSinceEpoch);
         if (!mounted) return;
 
         var userWallet = await Hive.openBox('wallet_$inputUsername');
@@ -224,6 +264,19 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                  if (_showFingerprint) ...[
+                    SizedBox(height: 14),
+                    ElevatedButton.icon(
+                      icon: Icon(Icons.fingerprint),
+                      label: Text('Quick Access dengan Fingerprint'),
+                      onPressed: _fingerprintLogin,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 48),
+                      ),
+                    ),
+                    SizedBox(height: 14),
+                    Text('Atau login manual di bawah'),
+                  ],
                 ],
               ),
             ),
