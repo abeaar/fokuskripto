@@ -75,7 +75,17 @@ class _FingerprintPageState extends State<FingerprintPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Fingerprint Required')),
+      appBar: AppBar(
+        title: const Text(
+          'Fingerprint Required',
+          style: TextStyle(
+            color: Color.fromARGB(255, 59, 160, 63),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevation: 10,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

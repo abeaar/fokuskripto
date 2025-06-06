@@ -67,10 +67,6 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             SizedBox(height: 8),
-            Text(
-              'Loading... Please wait',
-              style: TextStyle(color: Colors.white70),
-            ),
           ],
         ),
       ),
