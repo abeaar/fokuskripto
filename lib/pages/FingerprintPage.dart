@@ -92,8 +92,6 @@ class _FingerprintPageState extends State<FingerprintPage> {
           children: [
             Icon(Icons.fingerprint, size: 80, color: Colors.blueGrey),
             const SizedBox(height: 24),
-            Text(_status, textAlign: TextAlign.center),
-            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isAuthenticating ? null : _authenticate,
               child: const Text('Coba Lagi'),

@@ -186,6 +186,7 @@ class WalletProvider extends ChangeNotifier {
         }
 
         assetData = {
+          'id': coinData?.id ?? symbol.toLowerCase(),
           'amount': newAmount,
           'name': coinData?.name ?? symbol,
           'short_name': symbol,

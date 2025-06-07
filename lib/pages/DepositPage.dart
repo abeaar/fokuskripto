@@ -70,7 +70,12 @@ class _DepositPageState extends State<DepositPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Deposit')),
+      appBar: AppBar(
+        title: const Text(
+          'Deposit',
+          style: TextStyle(color: Color.fromARGB(255, 112, 190, 145)),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
