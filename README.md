@@ -1,5 +1,12 @@
 # FokusKripto
 
+## 👥 Team
+
+This project was developed with the help and support of my GitHub team:
+
+- [@Nandisya Faiz Efendi](https://github.com/faiz-effendi)
+Thank you for your collaboration and contributions!
+
 [![Flutter](https://img.shields.io/badge/Flutter-3.0%2B-blue?logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-lightgrey)](https://flutter.dev)
@@ -117,12 +124,6 @@ assets/
 - Market data is fetched from CoinGecko API (`lib/services/api/coin_gecko_api.dart`).
 - Shake sensor feature is enabled on the market page.
 - For further development, use separate branches for new features.
-
----
-
-## 📄 License
-
-MIT (or adjust as needed)
 
 ---
 
