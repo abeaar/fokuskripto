@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:fokuskripto/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WithdrawPage extends StatefulWidget {
   final Box walletBox;
@@ -70,6 +71,19 @@ class _WithdrawPageState extends State<WithdrawPage> {
 
       widget.walletBox.put('IDR', idrAsset);
 
+      // Catat ke history
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username') ?? 'Guest';
+      final historyBox = await Hive.openBox('transaction_history_$username');
+      await historyBox.add({
+        'type': 'withdraw',
+        'asset': 'IDR',
+        'amount': withdrawAmount,
+        'price': 1,
+        'date': DateTime.now().toIso8601String(),
+        'note': '',
+      });
+
       await NotificationService().showWithdrawalSuccessNotification(
         withdrawAmount,
       );
@@ -104,7 +118,13 @@ class _WithdrawPageState extends State<WithdrawPage> {
         (idrAssetDisplay['amount'] as num?)?.toDouble() ?? 0.0;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tarik Saldo')),
+      appBar: AppBar(
+        title: const Text(
+          'Tarik Saldo',
+          style: TextStyle(color: Color.fromARGB(255, 112, 190, 145)),
+        ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

@@ -5,6 +5,10 @@ import '../services/providers/market_provider.dart';
 import '../model/coinGecko.dart';
 import '../widgets/dashboardtab/coin_list_item.dart';
 import '../widgets/dashboardtab/top_coin.dart';
+import '../services/providers/news_provider.dart';
+import '../model/news_article.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../widgets/dashboardtab/news_list_item.dart';
 
 class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
@@ -24,21 +28,11 @@ class DashboardTab extends StatelessWidget {
     }
 
     final priceFormatter = _getPriceFormatter();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-          child: Text(
-            "Top Coin",
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
           child: Row(
             children: topCoins.map((coin) {
               return Expanded(
@@ -64,15 +58,6 @@ class DashboardTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-          child: Text(
-            "Trending",
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ),
         ...trendingCoins.map((coin) => CoinListItem(
               coin: coin,
               priceFormatter: priceFormatter,
@@ -108,14 +93,42 @@ class DashboardTab extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () => marketData.fetchData(),
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               if (marketData.isLoading)
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Center(child: CircularProgressIndicator()),
                 ),
+              const SizedBox(height: 10),
               _buildSummarySection(context, marketData.topCoins),
               _buildTrendingSection(context, marketData.trendingCoins),
+              const SizedBox(height: 20),
+              Text('News',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Consumer<NewsProvider>(
+                builder: (context, newsProvider, _) {
+                  if (newsProvider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (newsProvider.error != null) {
+                    return Center(child: Text('Error: ${newsProvider.error}'));
+                  }
+                  if (newsProvider.articles.isEmpty) {
+                    return const Center(child: Text('No news found.'));
+                  }
+                  return Column(
+                    children: List.generate(
+                      newsProvider.articles.length > 5
+                          ? 5
+                          : newsProvider.articles.length,
+                      (index) =>
+                          NewsListItem(article: newsProvider.articles[index]),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         );

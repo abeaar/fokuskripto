@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DepositPage extends StatefulWidget {
   // Terima box dari halaman sebelumnya
@@ -45,6 +46,19 @@ class _DepositPageState extends State<DepositPage> {
       // Simpan kembali data yang sudah diperbarui ke Hive
       widget.walletBox.put('IDR', idrAsset);
 
+      // Catat ke history
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username') ?? 'Guest';
+      final historyBox = await Hive.openBox('transaction_history_$username');
+      await historyBox.add({
+        'type': 'deposit',
+        'asset': 'IDR',
+        'amount': depositAmount,
+        'price': 1,
+        'date': DateTime.now().toIso8601String(),
+        'note': '',
+      });
+
       await NotificationService().showDepositSuccessNotification(
         depositAmount,
       );
@@ -70,7 +84,12 @@ class _DepositPageState extends State<DepositPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Deposit')),
+      appBar: AppBar(
+        title: const Text(
+          'Deposit',
+          style: TextStyle(color: Color.fromARGB(255, 112, 190, 145)),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

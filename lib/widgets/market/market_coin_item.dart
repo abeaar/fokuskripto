@@ -5,8 +5,8 @@ import '../../pages/CoinDetail.dart';
 
 class MarketCoinListItem extends StatelessWidget {
   final CoinGeckoMarketModel coin;
-  final NumberFormat priceFormatter; 
-  final NumberFormat volumeFormatter; 
+  final NumberFormat priceFormatter;
+  final NumberFormat volumeFormatter;
 
   const MarketCoinListItem({
     super.key,
@@ -21,10 +21,8 @@ class MarketCoinListItem extends StatelessWidget {
     Color changeColor =
         (coin.priceChangePercentage24h ?? 0) >= 0 ? Colors.green : Colors.red;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      elevation: 1.5,
-      child: InkWell(
+    return Column(children: [
+      InkWell(
         onTap: () {
           Navigator.push(
             context,
@@ -32,7 +30,7 @@ class MarketCoinListItem extends StatelessWidget {
               builder: (context) => CoinDetailPage(
                 coinId: coin.id,
                 coinName: coin.name,
-                coinSymbol: coin.symbol, 
+                coinSymbol: coin.symbol,
               ),
             ),
           );
@@ -107,6 +105,7 @@ class MarketCoinListItem extends StatelessWidget {
           ),
         ),
       ),
-    );
+      const Divider(height: 5, thickness: 0.7, indent: 12, endIndent: 12),
+    ]);
   }
 }

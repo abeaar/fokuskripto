@@ -4,6 +4,7 @@ import 'DashboardTab.dart';
 import 'MarketTab.dart';
 import 'WalletTab.dart';
 import 'TradeTab.dart';
+import 'package:fokuskripto/pages/history_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,6 +38,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _navigateToHistory(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HistoryPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     String title = 'Crypto App';
@@ -58,6 +68,14 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.history),
+            color: Color.fromARGB(255, 59, 160, 63),
+            tooltip: 'History',
+            onPressed: () {
+              _navigateToHistory(context);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.person_2_outlined),
             color: Color.fromARGB(255, 59, 160, 63),

@@ -13,6 +13,12 @@ class TopCoin extends StatelessWidget {
     ThemeData theme = Theme.of(context);
 
     return Card(
+      color: const Color.fromARGB(255, 255, 255, 255),
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      shadowColor: const Color.fromARGB(255, 216, 216, 216),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
         child: Column(

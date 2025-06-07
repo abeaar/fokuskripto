@@ -186,6 +186,7 @@ class WalletProvider extends ChangeNotifier {
         }
 
         assetData = {
+          'id': coinData?.id ?? symbol.toLowerCase(),
           'amount': newAmount,
           'name': coinData?.name ?? symbol,
           'short_name': symbol,
@@ -257,6 +258,19 @@ class WalletProvider extends ChangeNotifier {
           coinData: coinData,
         );
       }
+
+      // Catat ke history
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username') ?? 'Guest';
+      final historyBox = await Hive.openBox('transaction_history_$username');
+      await historyBox.add({
+        'type': isBuy ? 'buy' : 'sell',
+        'asset': cryptoSymbol,
+        'amount': cryptoAmount,
+        'price': coinData.currentPrice,
+        'date': DateTime.now().toIso8601String(),
+        'note': '',
+      });
 
       print(
           'WalletProvider: Trade Executed - Type: ${isBuy ? 'BUY' : 'SELL'}, Crypto: $cryptoSymbol, Amount: $cryptoAmount, IDR: $idrAmount'); // Debug log
