@@ -23,7 +23,7 @@ class CoinListItem extends StatelessWidget {
           },
           child: Padding(
             padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 14.0),
             child: Row(
               children: [
                 // --- IKON KOIN ---

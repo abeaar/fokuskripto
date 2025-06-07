@@ -14,6 +14,7 @@ import 'pages/HomePage.dart';
 import 'pages/SplashScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/FingerprintPage.dart';
+import 'package:fokuskripto/services/providers/news_provider.dart';
 
 final ValueNotifier<Key> appKeyNotifier = ValueNotifier(Key('initial'));
 
@@ -97,6 +98,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             );
           },
         ),
+        ChangeNotifierProvider(create: (_) => NewsProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
