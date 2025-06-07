@@ -368,20 +368,34 @@ class _WalletTabState extends State<WalletTab> {
 
   Widget _buildCoinTile(dynamic asset) {
     final amountFormatter = NumberFormat('#,##0.########', 'en_US');
-
     final valueFormatter = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'IDR ',
       decimalDigits: 0,
     );
     final String? assetId = asset['id'];
-
+    final isRupiah = (asset['short_name'] ?? '').toUpperCase() == 'IDR';
+    Widget leadingIcon;
+    if (isRupiah) {
+      leadingIcon = Image.asset(
+        'assets/logo/rupiah.png',
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+      );
+    } else {
+      leadingIcon = Image.network(
+        asset['image_url'] ?? '',
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.error, color: Colors.red);
+        },
+      );
+    }
     final CoinGeckoMarketModel? marketCoin = _marketCoins
         .where((coin) => coin.id == assetId)
         .cast<CoinGeckoMarketModel?>()
         .firstOrNull;
     final double? marketPrice = marketCoin?.currentPrice;
-
     final double amount = (asset['amount'] as num?)?.toDouble() ?? 0.0;
     final double price = (asset['price_in_idr'] as num?)?.toDouble() ?? 0.0;
     final double totalValuePerCoin = amount * price;
@@ -392,12 +406,7 @@ class _WalletTabState extends State<WalletTab> {
           CircleAvatar(
             backgroundColor: Colors.transparent,
             radius: 20,
-            child: Image.network(
-              asset['image_url'] ?? '',
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.error, color: Colors.red);
-              },
-            ),
+            child: leadingIcon,
           ),
           const SizedBox(width: 12),
           Expanded(
