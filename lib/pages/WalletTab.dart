@@ -7,6 +7,9 @@ import '../services/api/coin_gecko_api.dart';
 import '../model/coinGecko.dart';
 import './DepositPage.dart';
 import './WithdrawPage.dart';
+import '../widgets/wallet/wallet_header.dart';
+import '../widgets/wallet/wallet_action_buttons.dart';
+import '../widgets/wallet/wallet_coin_list.dart';
 
 class WalletTab extends StatefulWidget {
   const WalletTab({super.key});
@@ -178,10 +181,38 @@ class _WalletTabState extends State<WalletTab> {
             child: Column(
               children: [
                 const SizedBox(height: 8),
-                _buildHeader(walletSummary.marketValue, walletSummary,
-                    walletSummary.staticValue),
+                WalletHeader(
+                  totalAssetValue: walletSummary.marketValue,
+                  summary: walletSummary,
+                  staticValue: walletSummary.staticValue,
+                  isBalanceVisible: _isBalanceVisible,
+                  onToggleBalance: () {
+                    setState(() {
+                      _isBalanceVisible = !_isBalanceVisible;
+                    });
+                  },
+                ),
                 const SizedBox(height: 24),
-                _buildActionButtons(),
+                WalletActionButtons(
+                  onDeposit: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DepositPage(walletBox: _userWalletBox),
+                      ),
+                    );
+                  },
+                  onWithdraw: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            WithdrawPage(walletBox: _userWalletBox),
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -202,255 +233,12 @@ class _WalletTabState extends State<WalletTab> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildCoinList(box),
+                WalletCoinList(box: box, marketCoins: _marketCoins),
               ],
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildHeader(
-      double totalAssetValue, WalletSummary summary, double staticValue) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Est. Asset ',
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
-        ),
-        const SizedBox(height: 2),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _isBalanceVisible ? _formatCurrency(totalAssetValue) : '********',
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            IconButton(
-              icon: Icon(
-                _isBalanceVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.grey,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isBalanceVisible = !_isBalanceVisible;
-                });
-              },
-            ),
-          ],
-        ),
-        Row(),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Text(
-              'Return Value : ',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-            Text(
-              _isBalanceVisible
-                  ? _formatCurrency(summary.returnValue).replaceAll('IDR ', '')
-                  : '****',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: summary.returnValue >= 0 ? Colors.green : Colors.red,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: summary.returnPercentage >= 0
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                _isBalanceVisible
-                    ? '${summary.returnPercentage >= 0 ? '+' : ''}${summary.returnPercentage.toStringAsFixed(2)}%'
-                    : '****',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color:
-                      summary.returnPercentage >= 0 ? Colors.green : Colors.red,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    // Tidak ada perubahan di sini
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DepositPage(walletBox: _userWalletBox),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color.fromARGB(255, 112, 190, 145),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Deposit',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => WithdrawPage(walletBox: _userWalletBox),
-                ),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              side: BorderSide(color: Colors.grey.shade400),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Withdraw',
-              style: TextStyle(
-                color: Color.fromARGB(255, 112, 190, 145),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCoinList(Box box) {
-    if (box.isEmpty) {
-      return const Expanded(child: Center(child: Text('No assets found.')));
-    }
-
-    return Expanded(
-      child: ListView.builder(
-        itemCount: box.length,
-        itemBuilder: (context, index) {
-          final asset = box.get(box.keyAt(index));
-          if (asset == null) return const SizedBox.shrink();
-          return _buildCoinTile(asset);
-        },
-      ),
-    );
-  }
-
-  Widget _buildCoinTile(dynamic asset) {
-    final amountFormatter = NumberFormat('#,##0.########', 'en_US');
-    final valueFormatter = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'IDR ',
-      decimalDigits: 0,
-    );
-    final String? assetId = asset['id'];
-    final isRupiah = (asset['short_name'] ?? '').toUpperCase() == 'IDR';
-    Widget leadingIcon;
-    if (isRupiah) {
-      leadingIcon = Image.asset(
-        'assets/logo/rupiah.png',
-        width: 40,
-        height: 40,
-        fit: BoxFit.cover,
-      );
-    } else {
-      leadingIcon = Image.network(
-        asset['image_url'] ?? '',
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.error, color: Colors.red);
-        },
-      );
-    }
-    final CoinGeckoMarketModel? marketCoin = _marketCoins
-        .where((coin) => coin.id == assetId)
-        .cast<CoinGeckoMarketModel?>()
-        .firstOrNull;
-    final double? marketPrice = marketCoin?.currentPrice;
-    final double amount = (asset['amount'] as num?)?.toDouble() ?? 0.0;
-    final double price = (asset['price_in_idr'] as num?)?.toDouble() ?? 0.0;
-    final double totalValuePerCoin = amount * price;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.transparent,
-            radius: 20,
-            child: leadingIcon,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  asset['name'] ?? 'No Name',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${amountFormatter.format(amount)} ${asset['short_name'] ?? ''}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                valueFormatter.format(totalValuePerCoin),
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-              ),
-              if (marketPrice != null && marketPrice > 0)
-                Text(
-                  'Est. : ${valueFormatter.format(marketPrice * amount).replaceAll('IDR ', '')}',
-                  style: TextStyle(
-                      color: Colors.green.shade700,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold),
-                ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
