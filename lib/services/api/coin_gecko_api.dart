@@ -34,7 +34,6 @@ class CoinGeckoApi {
       page: page,
     );
 
-    // Cek cache dulu jika tidak force refresh
     if (!forceRefresh) {
       try {
         final cached = await _cache.get<List<dynamic>>(cacheKey);

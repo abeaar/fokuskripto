@@ -104,7 +104,13 @@ class _WithdrawPageState extends State<WithdrawPage> {
         (idrAssetDisplay['amount'] as num?)?.toDouble() ?? 0.0;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tarik Saldo')),
+      appBar: AppBar(
+        title: const Text(
+          'Tarik Saldo',
+          style: TextStyle(color: Color.fromARGB(255, 112, 190, 145)),
+        ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

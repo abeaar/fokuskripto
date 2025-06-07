@@ -278,14 +278,11 @@ class CoinDetailPage extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 0),
                                           Text(
-                                            price,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 33,
-                                                ),
+                                            price.replaceAll('Rp ', ''),
+                                            style: TextStyle(
+                                              fontSize: 33,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                           if (coinDetail!
                                                   .priceChangePercentage24h !=

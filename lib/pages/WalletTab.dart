@@ -96,19 +96,31 @@ class _WalletTabState extends State<WalletTab> {
     });
   }
 
-  void _updateWalletSummary(double totalAssetValue) {
+  Future<void> _updateWalletSummary(double totalAssetValue) async {
     // Ambil static value dari total deposit
     double staticValue = 0;
+    double marketValue = 0;
     for (var key in _userWalletBox.keys) {
       final asset = _userWalletBox.get(key);
       if (asset != null && asset['amount'] is num) {
-        staticValue += (asset['amount'] as num).toDouble() *
+        final double amount = (asset['amount'] as num).toDouble();
+        final double initialPrice =
             (asset['initial_price'] ?? asset['price_in_idr'] as num).toDouble();
+        staticValue += amount * initialPrice;
+
+        final String? assetId = asset['id'];
+        final CoinGeckoMarketModel? marketCoin = _marketCoins
+            .where((coin) => coin.id == assetId)
+            .cast<CoinGeckoMarketModel?>()
+            .firstOrNull;
+        final double? marketPrice = marketCoin?.currentPrice;
+        marketValue +=
+            amount * (marketPrice ?? (asset['price_in_idr'] as num).toDouble());
       }
     }
 
     setState(() {
-      _walletSummary = WalletSummary.calculate(staticValue, totalAssetValue);
+      _walletSummary = WalletSummary.calculate(staticValue, marketValue);
     });
   }
 
@@ -135,6 +147,7 @@ class _WalletTabState extends State<WalletTab> {
       builder: (context, Box box, _) {
         double totalAssetValue = 0;
         double staticValue = 0;
+        _updateWalletSummary(0);
 
         for (var key in box.keys) {
           final asset = box.get(key);
@@ -152,9 +165,12 @@ class _WalletTabState extends State<WalletTab> {
           }
         }
 
-        final walletSummary =
-            WalletSummary.calculate(staticValue, totalAssetValue);
-
+        final walletSummary = _walletSummary ??
+            WalletSummary(
+                staticValue: 0,
+                marketValue: 0,
+                returnValue: 0,
+                returnPercentage: 0);
         return Scaffold(
           backgroundColor: Colors.grey[50],
           body: Padding(
@@ -162,7 +178,8 @@ class _WalletTabState extends State<WalletTab> {
             child: Column(
               children: [
                 const SizedBox(height: 8),
-                _buildHeader(totalAssetValue, walletSummary),
+                _buildHeader(walletSummary.marketValue, walletSummary,
+                    walletSummary.staticValue),
                 const SizedBox(height: 24),
                 _buildActionButtons(),
                 const SizedBox(height: 24),
@@ -194,12 +211,13 @@ class _WalletTabState extends State<WalletTab> {
     );
   }
 
-  Widget _buildHeader(double totalAssetValue, WalletSummary summary) {
+  Widget _buildHeader(
+      double totalAssetValue, WalletSummary summary, double staticValue) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Estimated Asset Value',
+          'Est. Asset ',
           style: TextStyle(color: Colors.grey[600], fontSize: 14),
         ),
         const SizedBox(height: 2),
@@ -227,15 +245,18 @@ class _WalletTabState extends State<WalletTab> {
             ),
           ],
         ),
+        Row(),
         const SizedBox(height: 8),
         Row(
           children: [
             Text(
-              'Return Value (1D): ',
+              'Return Value : ',
               style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
             Text(
-              _isBalanceVisible ? _formatCurrency(summary.returnValue) : '****',
+              _isBalanceVisible
+                  ? _formatCurrency(summary.returnValue).replaceAll('IDR ', '')
+                  : '****',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -353,11 +374,17 @@ class _WalletTabState extends State<WalletTab> {
       symbol: 'IDR ',
       decimalDigits: 0,
     );
+    final String? assetId = asset['id'];
+
+    final CoinGeckoMarketModel? marketCoin = _marketCoins
+        .where((coin) => coin.id == assetId)
+        .cast<CoinGeckoMarketModel?>()
+        .firstOrNull;
+    final double? marketPrice = marketCoin?.currentPrice;
 
     final double amount = (asset['amount'] as num?)?.toDouble() ?? 0.0;
     final double price = (asset['price_in_idr'] as num?)?.toDouble() ?? 0.0;
     final double totalValuePerCoin = amount * price;
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
@@ -378,8 +405,7 @@ class _WalletTabState extends State<WalletTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  asset['name'] ??
-                      'No Name', // Tambahkan fallback jika nama null
+                  asset['name'] ?? 'No Name',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -404,6 +430,14 @@ class _WalletTabState extends State<WalletTab> {
                 valueFormatter.format(totalValuePerCoin),
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
+              if (marketPrice != null && marketPrice > 0)
+                Text(
+                  'Est. : ${valueFormatter.format(marketPrice * amount).replaceAll('IDR ', '')}',
+                  style: TextStyle(
+                      color: Colors.green.shade700,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold),
+                ),
             ],
           ),
         ],
