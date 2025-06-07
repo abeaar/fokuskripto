@@ -57,7 +57,7 @@ class CoinDetailPage extends StatelessWidget {
               ? "${volumeFormatter.format(coinDetail!.totalVolumeIdr!)}"
               : '-';
           final volumeBtc = coinDetail?.totalVolumeBtc != null
-              ? "${coinVolumeFormatter.format(coinDetail!.totalVolumeBtc!)} ${coinDetail!.symbol.toUpperCase()}"
+              ? "${coinVolumeFormatter.format(coinDetail!.totalVolumeBtc!)} ${coinDetail.symbol.toUpperCase()}"
               : '-';
 
           String appBarTitle = coinDetail?.name ?? coinName ?? coinId;
@@ -68,7 +68,6 @@ class CoinDetailPage extends StatelessWidget {
             appBarTitle =
                 "${coinName ?? coinId} (${coinSymbol!.toUpperCase()})";
           }
-          print('CoinDetailProvider created for $coinId');
           Widget buildChart() {
             if (chartSpots.isEmpty) {
               return const SizedBox(
@@ -214,6 +213,7 @@ class CoinDetailPage extends StatelessWidget {
               titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 24,
+                    color: Color.fromARGB(255, 112, 190, 145),
                   ),
             ),
             body: isLoading
@@ -284,21 +284,18 @@ class CoinDetailPage extends StatelessWidget {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          if (coinDetail!
-                                                  .priceChangePercentage24h !=
-                                              null)
-                                            Text(
-                                              "${coinDetail.priceChangePercentage24h! >= 0 ? '+' : ''}${percentageFormatter.format(coinDetail.priceChangePercentage24h)}%",
-                                              style: TextStyle(
-                                                color: (coinDetail
-                                                            .priceChangePercentage24h! >=
-                                                        0)
-                                                    ? Colors.green[700]
-                                                    : Colors.red[700],
-                                                fontSize: 23,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                          Text(
+                                            "${coinDetail.priceChangePercentage24h! >= 0 ? '+' : ''}${percentageFormatter.format(coinDetail.priceChangePercentage24h)}%",
+                                            style: TextStyle(
+                                              color: (coinDetail
+                                                          .priceChangePercentage24h! >=
+                                                      0)
+                                                  ? Colors.green[700]
+                                                  : Colors.red[700],
+                                              fontSize: 23,
+                                              fontWeight: FontWeight.w500,
                                             ),
+                                          ),
                                         ],
                                       ),
                                     ),

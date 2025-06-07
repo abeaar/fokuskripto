@@ -12,7 +12,7 @@ class CacheException implements Exception {
 }
 
 class CacheManager {
-  static const Duration defaultExpiration = Duration(minutes: 3);
+  static const Duration defaultExpiration = Duration(minutes: 5);
   late Box _box;
   final String boxName;
   bool _isInitialized = false;
