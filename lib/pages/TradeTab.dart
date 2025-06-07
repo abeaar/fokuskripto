@@ -150,14 +150,21 @@ class _TradeTabState extends State<TradeTab> {
                           children: [
                             Text(
                               'Saldo Tersedia:',
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[500],
+                              ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 1),
                             Text(
                               tradeProvider.currentMode == TradeMode.buy
                                   ? _priceFormatter.format(idrBalance)
                                   : '${_cryptoAmountFormatter.format(cryptoBalance)} ${tradeProvider.selectedCoinSymbol}',
-                              style: Theme.of(context).textTheme.titleLarge,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),

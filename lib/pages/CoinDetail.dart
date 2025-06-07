@@ -208,7 +208,9 @@ class CoinDetailPage extends StatelessWidget {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(appBarTitle),
+              title: Text(appBarTitle,
+                  style:
+                      const TextStyle(color: Color.fromARGB(255, 59, 160, 63))),
               backgroundColor: Colors.white,
               titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,

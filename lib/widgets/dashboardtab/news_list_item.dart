@@ -19,6 +19,13 @@ class NewsListItem extends StatelessWidget {
       },
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+        color: const Color.fromARGB(255, 255, 255, 255),
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        shadowColor: const Color.fromARGB(255, 216, 216, 216),
+        
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Row(

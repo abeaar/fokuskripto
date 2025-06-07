@@ -46,7 +46,7 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.show(
       0, // ID notifikasi
       'Penarikan Berhasil!', // Judul Notifikasi
-      'Anda telah berhasil menarik saldo sebesar ${formatter.format(amount)}.', 
+      'Anda telah berhasil menarik saldo sebesar ${formatter.format(amount)}.',
       platformChannelSpecifics,
     );
   }
@@ -67,30 +67,29 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.show(
       1, // ID notifikasi
       'pemasukan Berhasil!', // Judul Notifikasi
-      'Anda telah berhasil memasukan saldo sebesar ${formatter.format(amount)}.', 
+      'Anda telah berhasil memasukan saldo sebesar ${formatter.format(amount)}.',
       platformChannelSpecifics,
     );
   }
 
-Future<void> showMarketUpdateNotification() async {
-  const AndroidNotificationDetails androidPlatformChannelSpecifics =
-      AndroidNotificationDetails(
-    'market_channel',
-    'Market Notifications',
-    channelDescription: 'Notifikasi update harga market',
-    importance: Importance.max,
-    priority: Priority.high,
-    ticker: 'ticker',
-  );
-  const NotificationDetails platformChannelSpecifics =
-      NotificationDetails(android: androidPlatformChannelSpecifics);
+  Future<void> showMarketUpdateNotification() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'market_channel',
+      'Market Notifications',
+      channelDescription: 'Notifikasi update harga market',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
 
-  await flutterLocalNotificationsPlugin.show(
-    2, // ID notifikasi unik
-    'Cek harga Market terbaru',
-    'Market telah diupdate, cek harga terbaru sekarang!',
-    platformChannelSpecifics,
-  );
-}
-
+    await flutterLocalNotificationsPlugin.show(
+      2, // ID notifikasi unik
+      'Cek harga Market terbaru',
+      'Market telah diupdate, cek harga terbaru sekarang!',
+      platformChannelSpecifics,
+    );
+  }
 }

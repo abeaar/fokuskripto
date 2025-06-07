@@ -22,6 +22,7 @@ class WalletCoinList extends StatelessWidget {
           if (asset == null) return const SizedBox.shrink();
           return WalletCoinTile(asset: asset, marketCoins: marketCoins);
         },
+        padding: const EdgeInsets.symmetric(horizontal: 5.0),
       ),
     );
   }
