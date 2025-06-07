@@ -30,7 +30,6 @@ class NewsProvider extends ChangeNotifier {
     final box = await Hive.openBox(_newsBoxName);
     final lastFetch = box.get(_newsLastFetchKey) as int?;
     final now = DateTime.now();
-   
     final shouldFetch = true;
     print(
         '[DEBUG] fetchNewsIfNeeded called, shouldFetch=$shouldFetch, lastFetch=$lastFetch');
@@ -65,8 +64,7 @@ class NewsProvider extends ChangeNotifier {
         _articles = [];
       }
     } else
-      _isLoading = false;
-    notifyListeners();
+      notifyListeners();
   }
 
   Future<void> forceRefresh() async {
