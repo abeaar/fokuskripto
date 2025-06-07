@@ -15,7 +15,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Generate random background color
     final random = Random();
     bgColor = Color.fromARGB(
       255,
@@ -30,10 +29,20 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2)); // Simulate loading
     final prefs = await SharedPreferences.getInstance();
     final username = prefs.getString('username');
+    final lastActive = prefs.getInt('lastActiveTime') ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final diffSeconds = ((now - lastActive) / 1000).round();
     if (!mounted) return;
     if (username != null) {
-      Navigator.pushReplacementNamed(context, '/home_page');
+      if (diffSeconds >= 5) {
+        print('Navigasi ke /fingerprint_page karena timeout fingerprint');
+        Navigator.pushReplacementNamed(context, '/fingerprint_page');
+      } else {
+        print('Navigasi ke /home_page karena masih dalam sesi');
+        Navigator.pushReplacementNamed(context, '/home_page');
+      }
     } else {
+      print('Navigasi ke /login_page karena belum login');
       Navigator.pushReplacementNamed(context, '/login_page');
     }
   }
@@ -58,10 +67,6 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             SizedBox(height: 8),
-            Text(
-              'Loading... Please wait',
-              style: TextStyle(color: Colors.white70),
-            ),
           ],
         ),
       ),

@@ -12,6 +12,8 @@ import 'pages/LoginPage.dart';
 import 'pages/RegisterPage.dart';
 import 'pages/HomePage.dart';
 import 'pages/SplashScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'pages/FingerprintPage.dart';
 
 final ValueNotifier<Key> appKeyNotifier = ValueNotifier(Key('initial'));
 
@@ -40,8 +42,35 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      // Update lastActiveTime setiap kali app masuk foreground
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(
+          'lastActiveTime', DateTime.now().millisecondsSinceEpoch);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +106,7 @@ class MyApp extends StatelessWidget {
           '/login_page': (context) => LoginPage(),
           '/register_page': (context) => RegisterPage(),
           '/home_page': (context) => HomePage(),
+          '/fingerprint_page': (context) => const FingerprintPage(),
         },
         theme: ThemeData(
           scaffoldBackgroundColor: Color.fromARGB(255, 255, 255, 255),

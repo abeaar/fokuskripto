@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../model/coinGecko.dart';
 import '../../services/api/coin_gecko_api.dart';
+import '../../services/notification_service.dart';
 
 class MarketProvider extends ChangeNotifier {
   final CoinGeckoApi _api = CoinGeckoApi();
@@ -14,7 +15,7 @@ class MarketProvider extends ChangeNotifier {
   DateTime? _lastUpdated;
   String _sortField = 'market_cap_rank';
   bool _isAscending = true;
-  static const int _refreshIntervalSeconds = 300;
+  static const int _refreshIntervalSeconds = 30;
   static const int _forceRefreshIntervalMinutes = 10;
 
   // Getters
@@ -66,6 +67,7 @@ class MarketProvider extends ChangeNotifier {
       );
 
       _allCoins = coins;
+
       _lastUpdated = DateTime.now();
       _error = null;
     } catch (e) {
@@ -73,6 +75,8 @@ class MarketProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+      // Tampilkan notifikasi lokal setiap fetch selesai
+      await NotificationService().showMarketUpdateNotification();
     }
   }
 
@@ -144,6 +148,11 @@ class MarketProvider extends ChangeNotifier {
       print('Error refreshing coin $id: $e');
     }
     return null;
+  }
+
+  void shuffleCoins() {
+    _allCoins.shuffle();
+    notifyListeners();
   }
 
   @override
