@@ -16,8 +16,7 @@ class NotificationService {
 
   Future<void> init() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings(
-            'kriptoin'); 
+        AndroidInitializationSettings('kriptoin');
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings();
@@ -47,7 +46,7 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.show(
       0, // ID notifikasi
       'Penarikan Berhasil!', // Judul Notifikasi
-      'Anda telah berhasil menarik saldo sebesar Rp ${formatter.format(amount)}.', // Isi Notifikasi
+      'Anda telah berhasil menarik saldo sebesar ${formatter.format(amount)}.', 
       platformChannelSpecifics,
     );
   }
@@ -66,10 +65,32 @@ class NotificationService {
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
-      0, // ID notifikasi
+      1, // ID notifikasi
       'pemasukan Berhasil!', // Judul Notifikasi
-      'Anda telah berhasil memasukan saldo sebesar Rp ${formatter.format(amount)}.', // Isi Notifikasi
+      'Anda telah berhasil memasukan saldo sebesar ${formatter.format(amount)}.', 
       platformChannelSpecifics,
     );
   }
+
+Future<void> showMarketUpdateNotification() async {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'market_channel',
+    'Market Notifications',
+    channelDescription: 'Notifikasi update harga market',
+    importance: Importance.max,
+    priority: Priority.high,
+    ticker: 'ticker',
+  );
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  await flutterLocalNotificationsPlugin.show(
+    2, // ID notifikasi unik
+    'Cek harga Market terbaru',
+    'Market telah diupdate, cek harga terbaru sekarang!',
+    platformChannelSpecifics,
+  );
+}
+
 }

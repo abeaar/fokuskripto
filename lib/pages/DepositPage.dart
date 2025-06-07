@@ -1,5 +1,6 @@
 // lib/deposit_page.dart
 
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../services/notification_service.dart';
@@ -44,12 +45,14 @@ class _DepositPageState extends State<DepositPage> {
       // Simpan kembali data yang sudah diperbarui ke Hive
       widget.walletBox.put('IDR', idrAsset);
 
-      await NotificationService().showWithdrawalSuccessNotification(
+      await NotificationService().showDepositSuccessNotification(
         depositAmount,
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Deposit sebesar IDR $depositAmount berhasil!'),
+          content: Text(
+            'Deposit sebesar IDR ${NumberFormat('#,##0', 'id_ID').format(depositAmount)} berhasil! Sisa saldo: IDR ${NumberFormat('#,##0', 'id_ID').format(currentAmount + depositAmount)}',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -100,7 +103,7 @@ class _DepositPageState extends State<DepositPage> {
               ElevatedButton(
                 onPressed: _handleDeposit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Color.fromARGB(255, 112, 190, 145),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),

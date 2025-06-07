@@ -39,14 +39,15 @@ class _PercentageButtonsState extends State<PercentageButtons> {
                 // 4. Atur warna berdasarkan kondisi `isSelected`
                 backgroundColor: isSelected ? Colors.amber : Colors.grey[200],
                 foregroundColor: isSelected ? Colors.black : Colors.black87,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 textStyle: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
                 // Menghilangkan bayangan agar terlihat lebih rapi saat aktif
-                elevation: isSelected ? 0 : 2, 
+                elevation: isSelected ? 0 : 2,
               ),
               child: Text("$percent%"),
             ),

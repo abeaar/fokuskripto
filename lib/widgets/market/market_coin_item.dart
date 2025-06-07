@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../model/coinGecko.dart';
-import '../pages/CoinDetail.dart';
+import '../../model/coinGecko.dart';
+import '../../pages/CoinDetail.dart';
 
 class MarketCoinListItem extends StatelessWidget {
   final CoinGeckoMarketModel coin;
-  final NumberFormat priceFormatter; // Untuk harga
-  final NumberFormat volumeFormatter; // Untuk volume
+  final NumberFormat priceFormatter; 
+  final NumberFormat volumeFormatter; 
 
   const MarketCoinListItem({
     super.key,
@@ -31,8 +31,8 @@ class MarketCoinListItem extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => CoinDetailPage(
                 coinId: coin.id,
-                coinName: coin.name, // Kirim nama untuk judul AppBar awal
-                coinSymbol: coin.symbol, // Kirim simbol jika perlu
+                coinName: coin.name,
+                coinSymbol: coin.symbol, 
               ),
             ),
           );
