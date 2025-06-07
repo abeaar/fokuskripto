@@ -35,7 +35,6 @@ Thank you for your collaboration and contributions!
 | :--------------------------------: | :-------------------------------: | :---------------------------------: |
 | ![Login](assets/logo/kriptoin.png) | ![Market](assets/logo/rupiah.png) | ![Wallet](assets/logo/kriptoin.png) |
 
-> _Replace the above screenshots with your actual app screens as needed._
 
 ---
 
