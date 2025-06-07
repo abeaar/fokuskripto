@@ -1,18 +1,17 @@
 # FokusKripto
 
+
+[![Flutter](https://img.shields.io/badge/Flutter-3.0%2B-blue?logo=flutter)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-lightgrey)](https://flutter.dev)
+
+<img src="assets/logo/kriptoin.png" alt="Logo" width="120" />
+
 ## 👥 Team
 
 This project was developed with the help and support of my GitHub team:
 
 - [@Nandisya Faiz Efendi](https://github.com/faiz-effendi)
 Thank you for your collaboration and contributions!
-
-[![Flutter](https://img.shields.io/badge/Flutter-3.0%2B-blue?logo=flutter)](https://flutter.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-lightgrey)](https://flutter.dev)
-
-<img src="assets/logo/kriptoin.png" alt="Logo" width="120" />
-
 ---
 
 ## 🚀 Main Features
@@ -36,7 +35,6 @@ Thank you for your collaboration and contributions!
 | :--------------------------------: | :-------------------------------: | :---------------------------------: |
 | ![Login](assets/logo/kriptoin.png) | ![Market](assets/logo/rupiah.png) | ![Wallet](assets/logo/kriptoin.png) |
 
-> _Replace the above screenshots with your actual app screens as needed._
 
 ---
 
