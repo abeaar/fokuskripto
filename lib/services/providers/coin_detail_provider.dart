@@ -20,7 +20,6 @@ class CoinDetailProvider extends ChangeNotifier {
   }
 
   Future<void> fetchAll({bool force = false}) async {
-    // Cek interval cache
     if (!force && _lastUpdated != null) {
       final timeSinceLastUpdate = DateTime.now().difference(_lastUpdated!);
       if (timeSinceLastUpdate.inSeconds < _refreshIntervalSeconds) {

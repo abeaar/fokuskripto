@@ -35,9 +35,13 @@ class CoinDetailPage extends StatelessWidget {
     );
 
     return ChangeNotifierProvider(
+      key: ValueKey(coinId),
       create: (_) => CoinDetailProvider(coinId: coinId),
       child: Consumer<CoinDetailProvider>(
         builder: (context, detailProvider, _) {
+          if (detailProvider.coinDetail?.id != coinId) {
+            Future.microtask(() => detailProvider.fetchAll(force: true));
+          }
           final coinDetail = detailProvider.coinDetail;
           final chartSpots = detailProvider.chartSpots;
           final isLoading = detailProvider.isLoading;
@@ -282,7 +286,7 @@ class CoinDetailPage extends StatelessWidget {
                                           Text(
                                             price.replaceAll('Rp ', ''),
                                             style: TextStyle(
-                                              fontSize: 33,
+                                              fontSize: 30,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),

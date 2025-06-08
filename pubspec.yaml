@@ -43,6 +43,15 @@ flutter:
   assets:
     - assets/logo/kriptoin.png
     - assets/logo/rupiah.png
+  fonts:
+    - family: SFPRODISPLAY
+      fonts:
+        - asset: assets/fonts/SFPRODISPLAYREGULAR.OTF
+          weight: 400
+        - asset: assets/fonts/SFPRODISPLAYMEDIUM.OTF
+          weight: 500
+        - asset: assets/fonts/SFPRODISPLAYBOLD.OTF
+          weight: 700
 
 flutter_launcher_icons:
   android: true

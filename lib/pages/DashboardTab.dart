@@ -31,17 +31,14 @@ class DashboardTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+        SizedBox(
+          width: double.infinity,
           child: Row(
             children: topCoins.map((coin) {
               return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: TopCoin(
-                    coin: coin,
-                    priceFormatter: priceFormatter,
-                  ),
+                child: TopCoin(
+                  coin: coin,
+                  priceFormatter: priceFormatter,
                 ),
               );
             }).toList(),
@@ -93,7 +90,7 @@ class DashboardTab extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () => marketData.fetchData(),
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             children: [
               if (marketData.isLoading)
                 const Padding(
