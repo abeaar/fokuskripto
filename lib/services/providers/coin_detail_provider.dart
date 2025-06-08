@@ -19,8 +19,26 @@ class CoinDetailProvider extends ChangeNotifier {
     fetchAll(force: false);
   }
 
+  Future<void> fetchChartData({bool force = false}) async {
+    try {
+      final chartRawData = await _apiService.getMarketChart(
+        coinId: coinId,
+        vsCurrency: 'idr',
+        days: 1,
+        forceRefresh: force,
+      );
+      chartSpots = chartRawData.asMap().entries.map((entry) {
+        return FlSpot(entry.key.toDouble(), entry.value[1]);
+      }).toList();
+      chartSpots.sort((a, b) => a.x.compareTo(b.x));
+      notifyListeners();
+    } catch (e) {
+      error = e.toString();
+      notifyListeners();
+    }
+  }
+
   Future<void> fetchAll({bool force = false}) async {
-    // Cek interval cache
     if (!force && _lastUpdated != null) {
       final timeSinceLastUpdate = DateTime.now().difference(_lastUpdated!);
       if (timeSinceLastUpdate.inSeconds < _refreshIntervalSeconds) {
@@ -35,16 +53,7 @@ class CoinDetailProvider extends ChangeNotifier {
     notifyListeners();
     try {
       coinDetail = await _apiService.getCoinDetail(coinId, forceRefresh: force);
-      final chartRawData = await _apiService.getMarketChart(
-        coinId: coinId,
-        vsCurrency: 'idr',
-        days: 1,
-        forceRefresh: force,
-      );
-      chartSpots = chartRawData.asMap().entries.map((entry) {
-        return FlSpot(entry.key.toDouble(), entry.value[1]);
-      }).toList();
-      chartSpots.sort((a, b) => a.x.compareTo(b.x));
+      await fetchChartData(force: force);
       _lastUpdated = DateTime.now();
     } catch (e) {
       error = e.toString();

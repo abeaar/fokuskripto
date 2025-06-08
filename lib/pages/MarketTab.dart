@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/providers/market_provider.dart';
 import '../widgets/market/market_coin_item.dart';
-import '../model/coinGecko.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:async';
 import 'dart:math';
@@ -20,6 +19,7 @@ class _MarketTabState extends State<MarketTab> {
   double _shakeThreshold = 15.0;
   DateTime? _lastShakeTime;
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -63,53 +63,110 @@ class _MarketTabState extends State<MarketTab> {
     if (marketData.isLoading && marketData.allCoins.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    final filteredCoins = _searchQuery.isEmpty
-        ? marketData.allCoins
-        : marketData.allCoins.where((coin) {
-            final q = _searchQuery.toLowerCase();
-            return coin.name.toLowerCase().contains(q) ||
-                coin.symbol.toLowerCase().contains(q);
-          }).toList();
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search Coin',
-              prefixIcon: Icon(Icons.search),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              isDense: true,
-              contentPadding:
-                  EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-            ),
-            onChanged: (val) {
-              setState(() {
-                _searchQuery = val;
-              });
-            },
+
+    if (marketData.error != null && marketData.allCoins.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                marketData.error!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.red[700]),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => marketData.fetchData(),
+                child: const Text('search coin'),
+              ),
+            ],
           ),
         ),
-        Expanded(child: _buildMarketContentList(context, filteredCoins)),
-      ],
-    );
-  }
-
-  Widget _buildMarketContentList(
-      BuildContext context, List<CoinGeckoMarketModel> coins) {
-    if (coins.isEmpty) {
-      return const Center(child: Text('No coins found.'));
+      );
     }
-    return ListView.builder(
-      itemCount: coins.length,
-      itemBuilder: (context, index) {
-        return MarketCoinListItem(
-          coin: coins[index],
-          priceFormatter: _priceFormatter,
-          volumeFormatter: _volumeFormatter,
-        );
-      },
+
+    if (marketData.allCoins.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Tidak ada data pasar koin.'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => marketData.fetchData(),
+              child: const Text('Muat Ulang'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final filteredCoins = marketData.allCoins.where((coin) {
+      return coin.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          coin.symbol.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    return RefreshIndicator(
+      onRefresh: () => marketData.fetchData(),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'search..',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 26.0,
+              vertical: 1.0,
+            ),
+            child: Consumer<MarketProvider>(
+              builder: (context, marketProvider, _) => Row(
+                children: [
+                  _buildSortHeader(context, marketProvider, 'Name', 'name', 3,
+                      MainAxisAlignment.start),
+                  _buildSortHeader(context, marketProvider, '24H Chg',
+                      'price_change_24h', 3, MainAxisAlignment.center),
+                  _buildSortHeader(context, marketProvider, 'Price / Vol 24H',
+                      'current_price', 4, MainAxisAlignment.end),
+                ],
+              ),
+            ),
+          ),
+          Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
+          if (marketData.isLoading)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredCoins.length,
+              itemBuilder: (context, index) {
+                return MarketCoinListItem(
+                  coin: filteredCoins[index],
+                  priceFormatter: _priceFormatter,
+                  volumeFormatter: _volumeFormatter,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -127,7 +184,7 @@ class _MarketTabState extends State<MarketTab> {
       child: InkWell(
         onTap: () => provider.sortBy(field),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 3.0),
           child: Row(
             mainAxisAlignment: alignment,
             children: [

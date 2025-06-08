@@ -64,7 +64,10 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(
           title,
-          style: TextStyle(color: const Color.fromARGB(255, 59, 160, 63)),
+          style: TextStyle(
+            color: const Color.fromARGB(255, 59, 160, 63),
+            fontFamily: 'SFPRODISPLAY',
+          ),
         ),
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: <Widget>[
@@ -89,38 +92,56 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: _widgetOptions,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home_outlined,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 0,
+              blurRadius: 10,
             ),
-            label: 'Home',
+          ],
+        ),
+        child: SizedBox(
+          height: 112,
+          child: BottomNavigationBar(
+            iconSize: 30,
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.home_outlined,
+                ),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.analytics_outlined,
+                ),
+                label: 'Market',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.swap_horiz_outlined),
+                label: 'Trade',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.wallet_outlined,
+                ),
+                label: 'Wallet',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: Color.fromARGB(255, 59, 160, 63),
+            backgroundColor: Colors.transparent,
+            unselectedItemColor: const Color.fromARGB(255, 184, 184, 184),
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            type: BottomNavigationBarType.fixed,
+            onTap: _onItemTapped,
+            elevation: 0,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.analytics_outlined,
-            ),
-            label: 'Market',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.swap_horiz_outlined),
-            label: 'Trade',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.wallet_outlined,
-            ),
-            label: 'Wallet',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Color.fromARGB(255, 101, 204, 104),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        unselectedItemColor: const Color.fromARGB(255, 184, 184, 184),
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped,
+        ),
       ),
     );
   }

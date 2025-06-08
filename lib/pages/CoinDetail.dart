@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/providers/coin_detail_provider.dart';
+import '../widgets/coin/coin_chart_widget.dart';
 
 class CoinDetailPage extends StatelessWidget {
   final String coinId;
@@ -35,9 +36,13 @@ class CoinDetailPage extends StatelessWidget {
     );
 
     return ChangeNotifierProvider(
+      key: ValueKey(coinId),
       create: (_) => CoinDetailProvider(coinId: coinId),
       child: Consumer<CoinDetailProvider>(
         builder: (context, detailProvider, _) {
+          if (detailProvider.coinDetail?.id != coinId) {
+            Future.microtask(() => detailProvider.fetchAll(force: true));
+          }
           final coinDetail = detailProvider.coinDetail;
           final chartSpots = detailProvider.chartSpots;
           final isLoading = detailProvider.isLoading;
@@ -69,78 +74,7 @@ class CoinDetailPage extends StatelessWidget {
                 "${coinName ?? coinId} (${coinSymbol!.toUpperCase()})";
           }
           Widget buildChart() {
-            if (chartSpots.isEmpty) {
-              return const SizedBox(
-                height: 200,
-                child: Center(child: Text("Data grafik tidak tersedia.")),
-              );
-            }
-            double minY = chartSpots
-                .map((spot) => spot.y)
-                .reduce((a, b) => a < b ? a : b);
-            double maxY = chartSpots
-                .map((spot) => spot.y)
-                .reduce((a, b) => a > b ? a : b);
-            double minX = chartSpots.first.x;
-            double maxX = chartSpots.last.x;
-            minY = minY * 0.99;
-            maxY = maxY * 1.01;
-            return SizedBox(
-              height: 200,
-              child: Padding(
-                padding:
-                    const EdgeInsets.only(top: 16.0, bottom: 8.0, right: 16.0),
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: const FlTitlesData(show: false),
-                    borderData: FlBorderData(
-                      show: true,
-                      border: Border.all(color: Colors.grey.shade300, width: 1),
-                    ),
-                    minX: minX,
-                    maxX: maxX,
-                    minY: minY,
-                    maxY: maxY,
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: chartSpots,
-                        isCurved: true,
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.3),
-                          ],
-                        ),
-                        barWidth: 3,
-                        isStrokeCapRound: true,
-                        dotData: const FlDotData(show: false),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          gradient: LinearGradient(
-                            colors: [
-                              Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.3),
-                              Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.0),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
+            return CoinChartWidget();
           }
 
           Widget buildInfoRow(String label, String? value) {
@@ -282,7 +216,7 @@ class CoinDetailPage extends StatelessWidget {
                                           Text(
                                             price.replaceAll('Rp ', ''),
                                             style: TextStyle(
-                                              fontSize: 33,
+                                              fontSize: 30,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),

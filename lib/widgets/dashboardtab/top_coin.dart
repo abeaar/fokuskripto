@@ -14,7 +14,7 @@ class TopCoin extends StatelessWidget {
 
     return Card(
       color: const Color.fromARGB(255, 255, 255, 255),
-      elevation: 6,
+      elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),

@@ -111,7 +111,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           '/fingerprint_page': (context) => const FingerprintPage(),
         },
         theme: ThemeData(
-          scaffoldBackgroundColor: Color.fromARGB(255, 255, 255, 255),
+          fontFamily: 'SFPRODISPLAY',
+          scaffoldBackgroundColor: Color.fromARGB(255, 245, 245, 245),
           textTheme: TextTheme(
             titleMedium: TextStyle(
               fontSize: 16,
@@ -171,8 +172,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
           ),
           appBarTheme: const AppBarTheme(
-            elevation: 10,
-            shadowColor: Color.fromARGB(255, 240, 240, 240),
+            elevation: 5,
+            shadowColor: Color.fromARGB(255, 255, 255, 255),
             titleTextStyle: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
