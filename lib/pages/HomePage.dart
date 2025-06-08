@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         child: SizedBox(
-          height: 112,
+          height: 70,
           child: BottomNavigationBar(
             iconSize: 30,
             items: const <BottomNavigationBarItem>[
