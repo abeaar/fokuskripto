@@ -69,7 +69,6 @@ class _HomePageState extends State<HomePage> {
             fontFamily: 'SFPRODISPLAY',
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.history),

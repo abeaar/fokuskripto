@@ -3,7 +3,7 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../services/notification_service.dart';
+import '../services/providers/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DepositPage extends StatefulWidget {
