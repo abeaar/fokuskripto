@@ -12,7 +12,7 @@ class CoinDetailProvider extends ChangeNotifier {
   bool isLoading = false;
   String? error;
   DateTime? _lastUpdated;
-  static const int _refreshIntervalSeconds = 60; // interval cache, bisa diubah
+  static const int _refreshIntervalSeconds = 60*5; 
 
   CoinDetailProvider({required this.coinId}) {
     print('CoinDetailProvider created for $coinId');

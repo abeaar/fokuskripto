@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../services/providers/coin_detail_provider.dart';
 import '../widgets/coin/coin_chart_widget.dart';
 
