@@ -81,7 +81,7 @@ assets/
    flutter run
    ```
 
-3. **(Optional) Setup Firebase for push notifications**
+3. **Setup Firebase for push notifications**
 
    - Create a project in [Firebase Console](https://console.firebase.google.com/)
    - Download `google-services.json` and place it in `android/app/`
