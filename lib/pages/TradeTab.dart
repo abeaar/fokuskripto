@@ -64,7 +64,6 @@ class _TradeTabState extends State<TradeTab> {
     if (marketProvider.isLoading && marketProvider.allCoins.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     if (marketProvider.error != null && marketProvider.allCoins.isEmpty) {
       return Center(
         child: Padding(

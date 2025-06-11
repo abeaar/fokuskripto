@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // IMPORT PACKAGE SHARED PREFERENCES
-import 'dart:convert'; // Untuk utf8.encode
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'dart:convert'; 
 import 'package:crypto/crypto.dart'; // Untuk sha256
 import 'package:hive_flutter/hive_flutter.dart';
 import '../main.dart';
