@@ -171,14 +171,15 @@ class _WithdrawPageState extends State<WithdrawPage> {
                   if (value == null || value.isEmpty) {
                     return 'Jumlah tidak boleh kosong';
                   }
-                  final valNum = double.tryParse(value.replaceAll(',', '.'));
-                  if (valNum == null) {
+                  if (value.contains('.') || value.contains(',')) {
+                    return 'jangan input titik (.) atau koma (,)';
+                  }
+                  if (double.tryParse(value) == null) {
                     return 'Format angka tidak valid';
                   }
-                  if (valNum <= 0) {
-                    return 'Jumlah harus lebih dari 0';
+                  if (double.parse(value) < 10000) {
+                    return 'Jumlah harus lebih dari 10000';
                   }
-
                   return null;
                 },
               ),

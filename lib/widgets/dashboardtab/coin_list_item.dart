@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../model/coinGecko.dart';
+import '../../pages/CoinDetail.dart';
 
 class CoinListItem extends StatelessWidget {
   final CoinGeckoMarketModel coin;
@@ -19,7 +20,16 @@ class CoinListItem extends StatelessWidget {
       children: [
         InkWell(
           onTap: () {
-            print('Tapped on ${coin.name}');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CoinDetailPage(
+                  coinId: coin.id,
+                  coinName: coin.name,
+                  coinSymbol: coin.symbol,
+                ),
+              ),
+            );
           },
           child: Padding(
             padding:

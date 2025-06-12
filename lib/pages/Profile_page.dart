@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
+import 'package:intl/intl.dart';
 import '../services/providers/trade_provider.dart';
 import '../services/providers/wallet_provider.dart';
 import '../services/providers/profile_provider.dart';
@@ -118,9 +119,12 @@ class ProfilePage extends StatelessWidget {
                     style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                   ),
                   Text(
-                    '${profile.currencySymbols[profile.selectedCurrency]} ' +
-                        (profile.walletBalanceIdr * profile.currencyRate)
-                            .toStringAsFixed(2),
+                    NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol:
+                          '${profile.currencySymbols[profile.selectedCurrency]} ',
+                      decimalDigits: 0,
+                    ).format(profile.walletBalanceIdr * profile.currencyRate),
                     style: const TextStyle(
                       fontSize: 20,
                       color: Colors.black,

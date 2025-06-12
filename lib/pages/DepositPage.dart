@@ -109,10 +109,13 @@ class _DepositPageState extends State<DepositPage> {
                   if (value == null || value.isEmpty) {
                     return 'Jumlah tidak boleh kosong';
                   }
+                  if (value.contains('.') || value.contains(',')) {
+                    return 'jangan input titik (.) atau koma (,)';
+                  }
                   if (double.tryParse(value) == null) {
                     return 'Format angka tidak valid';
                   }
-                  if (double.parse(value) <= 10000) {
+                  if (double.parse(value) < 10000) {
                     return 'Jumlah harus lebih dari 10000';
                   }
                   return null;
