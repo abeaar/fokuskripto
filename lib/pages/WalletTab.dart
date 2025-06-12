@@ -36,6 +36,9 @@ class _WalletTabState extends State<WalletTab> {
         }
 
         final walletSummary = walletProvider.walletSummary;
+        // DEBUG: Print marketValue dan staticValue
+        print(
+            '[DEBUG] WalletTab - marketValue: [32m[1m${walletSummary.marketValue}[0m, staticValue: [34m[1m${walletSummary.staticValue}0m');
 
         return Scaffold(
           backgroundColor: Colors.grey[50],
