@@ -112,8 +112,8 @@ class _DepositPageState extends State<DepositPage> {
                   if (double.tryParse(value) == null) {
                     return 'Format angka tidak valid';
                   }
-                  if (double.parse(value) <= 0) {
-                    return 'Jumlah harus lebih dari 0';
+                  if (double.parse(value) <= 10000) {
+                    return 'Jumlah harus lebih dari 10000';
                   }
                   return null;
                 },

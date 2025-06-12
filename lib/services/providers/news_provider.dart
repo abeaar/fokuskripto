@@ -31,40 +31,35 @@ class NewsProvider extends ChangeNotifier {
     final lastFetch = box.get(_newsLastFetchKey) as int?;
     final now = DateTime.now();
     final shouldFetch = true;
-    print(
-        '[DEBUG] fetchNewsIfNeeded called, shouldFetch=$shouldFetch, lastFetch=$lastFetch');
-    if (shouldFetch) {
-      try {
-        final response = await http.get(Uri.parse(_apiUrl));
-        print('[DEBUG] NewsAPI status: ${response.statusCode}');
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final List<dynamic> articlesJson = data['articles'] ?? [];
-          print('[DEBUG] NewsAPI articles count: ${articlesJson.length}');
-          _articles = articlesJson
-              .take(5)
-              .map((json) => NewsArticle.fromJson(json))
-              .toList();
-          print('[DEBUG] Parsed articles count: ${_articles.length}');
-          if (_articles.isNotEmpty) {
-            print('[DEBUG] First article title: ${_articles[0].title}');
-          }
-          await box.put(
-              _newsListKey, _articles.map((a) => a.toJson()).toList());
-          await box.put(_newsLastFetchKey, now.millisecondsSinceEpoch);
-          _error = null;
-        } else {
-          _error = 'Failed to fetch news: ${response.statusCode}';
-          _articles = [];
+    try {
+      final response = await http.get(Uri.parse(_apiUrl));
+      print('[DEBUG] NewsAPI status: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> articlesJson = data['articles'] ?? [];
+        print('[DEBUG] NewsAPI articles count: ${articlesJson.length}');
+        _articles = articlesJson
+            .take(5)
+            .map((json) => NewsArticle.fromJson(json))
+            .toList();
+        print('[DEBUG] Parsed articles count: ${_articles.length}');
+        if (_articles.isNotEmpty) {
+          print('[DEBUG] First article title: ${_articles[0].title}');
         }
-      } catch (e, stack) {
-        print('[DEBUG] Error parsing news: $e');
-        print(stack);
-        _error = 'Error: $e';
+        await box.put(_newsListKey, _articles.map((a) => a.toJson()).toList());
+        await box.put(_newsLastFetchKey, now.millisecondsSinceEpoch);
+        _error = null;
+      } else {
+        _error = 'Failed to fetch news: ${response.statusCode}';
         _articles = [];
       }
-    } else
-      notifyListeners();
+    } catch (e, stack) {
+      print('[DEBUG] Error parsing news: $e');
+      print(stack);
+      _error = 'Error: $e';
+      _articles = [];
+    }
+    notifyListeners();
   }
 
   Future<void> forceRefresh() async {
