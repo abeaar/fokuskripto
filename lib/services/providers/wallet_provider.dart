@@ -2,13 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/coinGecko.dart';
+import '../../services/api/coin_gecko_api.dart';
+
+class WalletSummary {
+  final double staticValue;
+  final double marketValue;
+  final double returnValue;
+  final double returnPercentage;
+
+  WalletSummary({
+    required this.staticValue,
+    required this.marketValue,
+    required this.returnValue,
+    required this.returnPercentage,
+  });
+
+  factory WalletSummary.calculate(double staticValue, double marketValue) {
+    final returnValue = marketValue - staticValue;
+    final returnPercentage =
+        staticValue != 0 ? (returnValue / staticValue) * 100 : 0.0;
+    return WalletSummary(
+      staticValue: staticValue,
+      marketValue: marketValue,
+      returnValue: returnValue,
+      returnPercentage: returnPercentage,
+    );
+  }
+}
 
 class WalletProvider extends ChangeNotifier {
+  final CoinGeckoApi _apiServiceGecko = CoinGeckoApi();
   late Box _walletBox;
   String _username = '';
   Map<String, double> _balances = {};
   bool _isLoading = false;
   String? _error;
+  List<CoinGeckoMarketModel> _marketCoins = [];
 
   void resetWallet() {
     _username = '';
@@ -22,9 +51,34 @@ class WalletProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get username => _username;
+  Box get walletBox => _walletBox;
+  List<CoinGeckoMarketModel> get marketCoins => _marketCoins;
 
   // Get all balances
   Map<String, double> get balances => Map.unmodifiable(_balances);
+
+  WalletSummary get walletSummary {
+    double staticValue = 0;
+    double marketValue = 0;
+    for (var key in _walletBox.keys) {
+      final asset = _walletBox.get(key);
+      if (asset != null && asset['amount'] is num) {
+        final double amount = (asset['amount'] as num).toDouble();
+        final double initialPrice =
+            (asset['initial_price'] ?? asset['price_in_idr'] as num).toDouble();
+        staticValue += amount * initialPrice;
+        final String? assetId = asset['id'];
+        final CoinGeckoMarketModel? marketCoin = _marketCoins
+            .where((coin) => coin.id == assetId)
+            .cast<CoinGeckoMarketModel?>()
+            .firstOrNull;
+        final double? marketPrice = marketCoin?.currentPrice;
+        marketValue +=
+            amount * (marketPrice ?? (asset['price_in_idr'] as num).toDouble());
+      }
+    }
+    return WalletSummary.calculate(staticValue, marketValue);
+  }
 
   // Get balance for any asset (IDR or crypto)
   double getBalance(String symbol) {
@@ -46,6 +100,12 @@ class WalletProvider extends ChangeNotifier {
       _username = prefs.getString('username') ?? 'Guest';
       _walletBox = await Hive.openBox('wallet_$_username');
       await loadAllBalances();
+      await fetchMarketData();
+      // Listen to box changes and auto-update provider
+      _walletBox.listenable().addListener(() async {
+        await loadAllBalances();
+        notifyListeners();
+      });
     } catch (e) {
       _error = 'Failed to initialize wallet: $e';
       notifyListeners();
@@ -58,6 +118,7 @@ class WalletProvider extends ChangeNotifier {
   Future<void> refresh() async {
     print('WalletProvider: Starting refresh'); // Debug
     await loadAllBalances();
+    await fetchMarketData();
   }
 
   // Load all balances
@@ -279,6 +340,16 @@ class WalletProvider extends ChangeNotifier {
       _error = e.toString();
       notifyListeners();
       rethrow;
+    }
+  }
+
+  Future<void> fetchMarketData() async {
+    try {
+      _marketCoins =
+          await _apiServiceGecko.getMarkets(vsCurrency: 'idr', perPage: 100);
+      notifyListeners();
+    } catch (e) {
+      print('WalletProvider: Error fetching market data: $e');
     }
   }
 

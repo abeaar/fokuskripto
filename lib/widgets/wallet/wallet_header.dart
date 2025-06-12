@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../pages/WalletTab.dart';
+import '../../services/providers/wallet_provider.dart';
 
 class WalletHeader extends StatelessWidget {
   final double totalAssetValue;

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../services/providers/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/providers/wallet_provider.dart';
 
 class DepositPage extends StatefulWidget {
   // Terima box dari halaman sebelumnya
@@ -17,6 +18,7 @@ class DepositPage extends StatefulWidget {
 }
 
 class _DepositPageState extends State<DepositPage> {
+  final WalletProvider walletProvider = WalletProvider();
   final _amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -44,7 +46,7 @@ class _DepositPageState extends State<DepositPage> {
       idrAsset['amount'] = currentAmount + depositAmount;
 
       // Simpan kembali data yang sudah diperbarui ke Hive
-      widget.walletBox.put('IDR', idrAsset);
+      await walletProvider.depositIDR(depositAmount);
 
       // Catat ke history
       final prefs = await SharedPreferences.getInstance();
@@ -112,8 +114,8 @@ class _DepositPageState extends State<DepositPage> {
                   if (double.tryParse(value) == null) {
                     return 'Format angka tidak valid';
                   }
-                  if (double.parse(value) <= 0) {
-                    return 'Jumlah harus lebih dari 0';
+                  if (double.parse(value) < 10000) {
+                    return 'Jumlah harus lebih dari 10000';
                   }
                   return null;
                 },
