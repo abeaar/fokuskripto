@@ -1,6 +1,6 @@
 import 'package:fokuskripto/services/api/api_exception.dart';
 import 'package:fokuskripto/services/api/endpoints.dart';
-import 'package:fokuskripto/services/base_network.dart';
+import 'package:fokuskripto/services/api/base_network.dart';
 import 'package:fokuskripto/services/cache/cache_manager.dart ';
 import 'package:fokuskripto/model/coinGecko.dart';
 import 'package:fokuskripto/model/coinGecko_detail.dart';

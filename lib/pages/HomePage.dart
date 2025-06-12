@@ -69,7 +69,6 @@ class _HomePageState extends State<HomePage> {
             fontFamily: 'SFPRODISPLAY',
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.history),
@@ -104,7 +103,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         child: SizedBox(
-          height: 70,
+          height: 80,
           child: BottomNavigationBar(
             iconSize: 30,
             items: const <BottomNavigationBarItem>[

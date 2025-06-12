@@ -1,6 +1,5 @@
 # FokusKripto
 
-
 [![Flutter](https://img.shields.io/badge/Flutter-3.0%2B-blue?logo=flutter)](https://flutter.dev)
 [![Platform](https://img.shields.io/badge/platform-android%20%7C%20ios-lightgrey)](https://flutter.dev)
 
@@ -11,7 +10,8 @@
 This project was developed with the help and support of my GitHub team:
 
 - [@Nandisya Faiz Efendi](https://github.com/faiz-effendi)
-Thank you for your collaboration and contributions!
+  Thank you for your collaboration and contributions!
+
 ---
 
 ## 🚀 Main Features
@@ -31,10 +31,9 @@ Thank you for your collaboration and contributions!
 
 ## 🖼️ Screenshots
 
-|        Login & Fingerprint         |              Market               |               Wallet                |
-| :--------------------------------: | :-------------------------------: | :---------------------------------: |
-| ![Login](assets/logo/kriptoin.png) | ![Market](assets/logo/rupiah.png) | ![Wallet](assets/logo/kriptoin.png) |
-
+|      Login & Fingerprint       |              Market              |              Wallet              |
+| :----------------------------: | :------------------------------: | :------------------------------: |
+| ![Login](screenshot/login.jpg) | ![Market](screenshot/market.jpg) | ![Wallet](screenshot/wallet.jpg) |
 
 ---
 
@@ -82,7 +81,7 @@ assets/
    flutter run
    ```
 
-3. **(Optional) Setup Firebase for push notifications**
+3. **Setup Firebase for push notifications**
 
    - Create a project in [Firebase Console](https://console.firebase.google.com/)
    - Download `google-services.json` and place it in `android/app/`

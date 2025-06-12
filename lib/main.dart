@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:fokuskripto/services/notification_service.dart';
+import 'package:fokuskripto/services/providers/notification_service.dart';
 import 'package:fokuskripto/services/providers/market_provider.dart';
 import 'package:fokuskripto/services/providers/trade_provider.dart';
 import 'package:fokuskripto/services/providers/wallet_provider.dart';
@@ -15,6 +15,7 @@ import 'pages/SplashScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/FingerprintPage.dart';
 import 'package:fokuskripto/services/providers/news_provider.dart';
+import 'services/providers/profile_provider.dart';
 
 final ValueNotifier<Key> appKeyNotifier = ValueNotifier(Key('initial'));
 
@@ -99,6 +100,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           },
         ),
         ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -178,6 +180,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
+            surfaceTintColor: Color.fromARGB(255, 255, 255, 255),
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(16),

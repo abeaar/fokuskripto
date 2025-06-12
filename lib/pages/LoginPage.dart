@@ -1,12 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // IMPORT PACKAGE SHARED PREFERENCES
-import 'dart:convert'; // Untuk utf8.encode
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'dart:convert'; 
 import 'package:crypto/crypto.dart'; // Untuk sha256
 import 'package:hive_flutter/hive_flutter.dart';
 import '../main.dart';
 import './HomePage.dart';
 import 'package:local_auth/local_auth.dart';
+import '../services/providers/profile_provider.dart';
+import 'package:provider/provider.dart';
 
 const String spIsLoginKey = 'isLogin';
 const String spUsernameKey = 'username';
@@ -135,6 +137,9 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
         appKeyNotifier.value = Key(DateTime.now().toString());
+        await loginData.setString('username', inputUsername);
+        Provider.of<ProfileProvider>(context, listen: false)
+            .loadAllProfileData();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),

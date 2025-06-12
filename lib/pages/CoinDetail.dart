@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../services/providers/coin_detail_provider.dart';
 import '../widgets/coin/coin_chart_widget.dart';
 
@@ -40,9 +39,6 @@ class CoinDetailPage extends StatelessWidget {
       create: (_) => CoinDetailProvider(coinId: coinId),
       child: Consumer<CoinDetailProvider>(
         builder: (context, detailProvider, _) {
-          if (detailProvider.coinDetail?.id != coinId) {
-            Future.microtask(() => detailProvider.fetchAll(force: true));
-          }
           final coinDetail = detailProvider.coinDetail;
           final chartSpots = detailProvider.chartSpots;
           final isLoading = detailProvider.isLoading;

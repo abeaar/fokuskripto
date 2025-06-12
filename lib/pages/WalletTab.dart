@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'MarketTab.dart';
 import '../services/api/coin_gecko_api.dart';
 import '../model/coinGecko.dart';
 import './DepositPage.dart';

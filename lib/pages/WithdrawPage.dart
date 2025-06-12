@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:fokuskripto/services/notification_service.dart';
+import 'package:fokuskripto/services/providers/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WithdrawPage extends StatefulWidget {

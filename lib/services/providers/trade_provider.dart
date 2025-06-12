@@ -23,7 +23,6 @@ class TradeProvider extends ChangeNotifier {
     required this.marketProvider,
     required this.walletProvider,
   }) {
-    print('TradeProvider: Initializing...');
     _initialize();
     marketProvider.addListener(_onMarketChanged);
     walletProvider.addListener(_onWalletChanged);
@@ -52,7 +51,7 @@ class TradeProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    print('TradeProvider: Disposing...'); // Debug log
+    print('TradeProvider: Disposing...'); 
     marketProvider.removeListener(_onMarketChanged);
     walletProvider.removeListener(_onWalletChanged);
     _isInitialized = false;

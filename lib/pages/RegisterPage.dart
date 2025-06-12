@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // IMPORT PACKAGE SHARED PREFERENCES
-import 'dart:convert'; // Untuk utf8.encode
+import 'dart:convert'; 
 import 'package:crypto/crypto.dart';
 
 Future<String> _hashPassword(String password) async {
