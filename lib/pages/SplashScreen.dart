@@ -15,13 +15,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    final random = Random();
-    bgColor = Color.fromARGB(
-      255,
-      random.nextInt(256),
-      random.nextInt(256),
-      random.nextInt(256),
-    );
+    bgColor = const Color.fromARGB(255, 255, 255, 255);
     _checkSession();
   }
 
@@ -32,6 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final lastActive = prefs.getInt('lastActiveTime') ?? 0;
     final now = DateTime.now().millisecondsSinceEpoch;
     final diffSeconds = ((now - lastActive) / 1000).round();
+    
     if (!mounted) return;
     if (username != null) {
       if (diffSeconds >= 5) {
@@ -54,19 +49,14 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            CircularProgressIndicator(),
-            SizedBox(height: 24),
-            Text(
-              'FokusKripto',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 2,
-              ),
+          children: [
+            Image.asset(
+              'assets/logo/kriptoin.png',
+              width: 200,
+              height: 200,
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 24),
+            CircularProgressIndicator(),
           ],
         ),
       ),

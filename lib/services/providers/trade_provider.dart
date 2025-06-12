@@ -51,7 +51,7 @@ class TradeProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    print('TradeProvider: Disposing...'); 
+    print('TradeProvider: Disposing...');
     marketProvider.removeListener(_onMarketChanged);
     walletProvider.removeListener(_onWalletChanged);
     _isInitialized = false;
@@ -73,6 +73,7 @@ class TradeProvider extends ChangeNotifier {
   }
 
   double get cryptoBalance {
+    if (_selectedCoinSymbol.isEmpty) return 0.0;
     final balance = walletProvider.getBalance(_selectedCoinSymbol);
     print('TradeProvider: Getting $_selectedCoinSymbol balance: $balance');
     return balance;
@@ -80,6 +81,7 @@ class TradeProvider extends ChangeNotifier {
 
   // Get current price from market provider
   double get currentPrice {
+    if (_selectedCoinId.isEmpty) return 0.0;
     final selectedCoin = marketProvider.allCoins.firstWhere(
       (coin) => coin.id == _selectedCoinId,
       orElse: () => CoinGeckoMarketModel(
@@ -97,7 +99,8 @@ class TradeProvider extends ChangeNotifier {
   Future<void> _initializeTrading() async {
     print('TradeProvider: Initializing trading...'); // Debug log
     // Hanya set default jika belum ada pilihan
-    if (_selectedCoinId.isEmpty && marketProvider.allCoins.isNotEmpty) {
+    if ((_selectedCoinId.isEmpty || _selectedCoinSymbol.isEmpty) &&
+        marketProvider.allCoins.isNotEmpty) {
       selectCoin(marketProvider.allCoins.first);
     }
   }

@@ -43,10 +43,8 @@ class MarketProvider extends ChangeNotifier {
 
     final timeSinceLastUpdate = DateTime.now().difference(_lastUpdated!);
     if (timeSinceLastUpdate.inMinutes >= _forceRefreshIntervalMinutes) {
-      // Hanya force refresh jika data lebih lama dari interval cache
       fetchData(silent: true, forceRefresh: true);
     } else {
-      // Gunakan cache jika data masih fresh
       fetchData(silent: true, forceRefresh: false);
     }
   }
@@ -57,7 +55,6 @@ class MarketProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
     }
-
     try {
       final coins = await _api.getMarkets(
         vsCurrency: 'idr',
@@ -65,9 +62,7 @@ class MarketProvider extends ChangeNotifier {
         page: 1,
         forceRefresh: forceRefresh,
       );
-
       _allCoins = coins;
-
       _lastUpdated = DateTime.now();
       _error = null;
     } catch (e) {
@@ -75,7 +70,6 @@ class MarketProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
-
       await NotificationService().showMarketUpdateNotification();
     }
   }

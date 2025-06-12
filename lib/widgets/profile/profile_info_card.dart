@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class ProfileInfoCard extends StatelessWidget {
   final String title;
-  final List<Widget> infoRows; // List dari _buildProfileInfoRow yang sudah dibuat
+  final List<Widget>
+      infoRows; // List dari _buildProfileInfoRow yang sudah dibuat
 
   const ProfileInfoCard({
     super.key,
@@ -19,7 +20,7 @@ class ProfileInfoCard extends StatelessWidget {
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
+                color: Color.fromARGB(255, 59, 160, 63),
               ),
         ),
         const Divider(thickness: 1.5),

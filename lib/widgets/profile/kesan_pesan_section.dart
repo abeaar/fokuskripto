@@ -19,7 +19,7 @@ class KesanPesanSection extends StatelessWidget {
           "Kesan dan Pesan Kuliah",
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
+                color: Color.fromARGB(255, 59, 160, 63),
               ),
         ),
         const Divider(thickness: 1.5),
@@ -27,9 +27,10 @@ class KesanPesanSection extends StatelessWidget {
           onTap: onEditKesanPesan,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: const Color.fromARGB(255, 213, 255, 214),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[300]!),
             ),
@@ -38,19 +39,22 @@ class KesanPesanSection extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    kesanPesan.isNotEmpty && kesanPesan != "Belum ada kesan dan pesan." 
-                        ? kesanPesan 
+                    kesanPesan.isNotEmpty &&
+                            kesanPesan != "Belum ada kesan dan pesan."
+                        ? kesanPesan
                         : "Belum ada kesan dan pesan. Ketuk untuk menambah.",
                     style: TextStyle(
                         fontSize: 15,
-                        color: kesanPesan.isNotEmpty && kesanPesan != "Belum ada kesan dan pesan."
+                        color: kesanPesan.isNotEmpty &&
+                                kesanPesan != "Belum ada kesan dan pesan."
                             ? Colors.black87
                             : Colors.grey[600]),
                     maxLines: 5,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.primary, size: 20),
+                Icon(Icons.edit_outlined,
+                    color: Theme.of(context).colorScheme.primary, size: 20),
               ],
             ),
           ),
